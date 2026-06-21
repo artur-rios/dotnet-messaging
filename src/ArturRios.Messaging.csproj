@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Authors>Artur Rios</Authors>
+    <Company>Artur Rios</Company>
+    <Description>Utilities for different messaging formats and protocols for .NET applications</Description>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IncludeSymbols>false</IncludeSymbols>
+    <Nullable>enable</Nullable>
+    <PackageId>ArturRios.Messaging</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://artur-rios.github.io/dotnet-messaging</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>utilities;messaging;email;mailgun;.net</PackageTags>
+    <RepositoryUrl>https://github.com/artur-rios/dotnet-messaging</RepositoryUrl>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ArturRios.Output" Version="2.0.1" />
+  </ItemGroup>
+</Project>
+

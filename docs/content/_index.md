@@ -1,0 +1,142 @@
++++
+title = 'Dotnet Messaging'
++++
+
+Utilities for different messaging formats and protocols for .NET applications.
+Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.
+Contributions are welcome!
+
+## Versioning
+
+Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
+changes increment the minor version; fixes or tweaks increment the patch.
+
+## Build, test and publish
+
+Use the official [.NET CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/) to build, test and publish the project and Git for source control.
+If you want, optional helper toolsets I built to facilitate these tasks are available:
+
+- [Dotnet Tools](https://github.com/artur-rios/dotnet-tools)
+- [Python Dotnet Tools](https://github.com/artur-rios/python-dotnet-tools)
+
+## Installation
+
+Install the package via the .NET CLI:
+
+```bash
+dotnet add package ArturRios.Messaging
+```
+
+Or via the NuGet Package Manager:
+
+```powershell
+Install-Package ArturRios.Messaging
+```
+
+## Requirements
+
+- .NET 10.0 or later
+- Environment variables for service configuration (see [Configuration](#configuration))
+
+## Features
+
+- **Email** — send transactional emails via [Mailgun](https://www.mailgun.com/) with a clean async interface
+- Designed for dependency injection — register services through the standard `IServiceCollection` pattern
+- Returns structured `ProcessOutput` results (from [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output)) rather than throwing exceptions, making error handling predictable
+
+## Configuration
+
+### Mailgun Email Service
+
+Set the following environment variables before calling `SendEmailAsync`:
+
+| Variable | Description |
+|---|---|
+| `MAILGUN_API_KEY` | Your Mailgun private API key |
+| `MAILGUN_DOMAIN` | Your verified Mailgun sending domain |
+
+## Usage
+
+### Dependency Injection
+
+Register `MailgunEmailService` with your DI container:
+
+```csharp
+using ArturRios.Messaging.Email;
+
+builder.Services.AddHttpClient<IEmailService, MailgunEmailService>();
+```
+
+### Sending an Email
+
+```csharp
+using ArturRios.Messaging.Email;
+
+public class NotificationService(IEmailService emailService)
+{
+    public async Task NotifyAsync(string recipient)
+    {
+        var output = await emailService.SendEmailAsync(
+            to: recipient,
+            subject: "Welcome!",
+            body: "Thanks for signing up."
+        );
+
+        if (!output.Success)
+        {
+            foreach (var error in output.Errors)
+                Console.WriteLine(error);
+        }
+    }
+}
+```
+
+### Without Dependency Injection
+
+```csharp
+using ArturRios.Messaging.Email;
+using Microsoft.Extensions.Logging.Abstractions;
+
+var service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance);
+var output = await service.SendEmailAsync("to@example.com", "Hello", "World");
+```
+
+## Class Diagram
+
+```mermaid
+classDiagram
+    class IEmailService {
+        <<interface>>
+        +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+    }
+
+    class MailgunEmailService {
+        -ILogger~MailgunEmailService~ _logger
+        -HttpClient _httpClient
+        -string MailgunApiBaseUrl$
+        -string MailgunApiVersion$
+        -string MailgunMessagesEndpoint$
+        +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
+        +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+    }
+
+    class ProcessOutput {
+        <<ArturRios.Output>>
+        +bool Success
+        +IEnumerable~string~ Errors
+        +AddError(message: string) void
+    }
+
+    IEmailService <|.. MailgunEmailService : implements
+    MailgunEmailService ..> ProcessOutput : returns
+```
+
+## Dependencies
+
+| Package | Purpose |
+|---|---|
+| [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output) | Structured operation result type (`ProcessOutput`) |
+
+## Legal Details
+
+This project is licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License). A copy of the license is available at [LICENSE](./LICENSE) in the repository.

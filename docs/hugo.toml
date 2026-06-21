@@ -1,0 +1,26 @@
+baseURL = 'https://artur-rios.github.io/dotnet-messaging/'
+languageCode = 'en-us'
+title = 'Dotnet Messaging'
+theme = 'hugo-theme-re-terminal'
+
+[module]
+[[module.mounts]]
+source = 'coverage-report'
+target = 'static/coverage-report'
+
+[params.logo]
+logoText = 'Dotnet Messaging'
+
+[menu]
+[[menu.main]]
+identifier = "author"
+name = "Author"
+url = "https://www.artur-rios.tech/"
+[[menu.main]]
+identifier = "github"
+name = "GitHub"
+url = "https://github.com/artur-rios/dotnet-messaging"
+[[menu.main]]
+identifier = "test-coverage"
+name = "Test Coverage"
+url = "https://artur-rios.github.io/dotnet-messaging/coverage-report"
