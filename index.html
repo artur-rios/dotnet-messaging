@@ -1,0 +1,60 @@
+<!doctype html><html lang=en><head><meta name=generator content="Hugo 0.163.3"><title>Dotnet Messaging</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content><meta name=keywords content><meta name=robots content="noodp"><link rel=canonical href=https://artur-rios.github.io/dotnet-messaging/><link rel=stylesheet href=https://artur-rios.github.io/dotnet-messaging/styles.css><link rel="shortcut icon" href=https://artur-rios.github.io/dotnet-messaging/img/theme-colors/orange.png><link rel=apple-touch-icon href=https://artur-rios.github.io/dotnet-messaging/img/theme-colors/orange.png><meta name=twitter:card content="summary"><meta property="og:locale" content="en"><meta property="og:type" content="website"><meta property="og:title" content="Dotnet Messaging"><meta property="og:description" content><meta property="og:url" content="https://artur-rios.github.io/dotnet-messaging/"><meta property="og:site_name" content="Dotnet Messaging"><meta property="og:image" content="img/favicon/%!s(<nil>).png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="627"><link href=/dotnet-messaging/index.xml rel=alternate type=application/rss+xml title="Dotnet Messaging"></head><body><div class="container center headings--one-size"><header class=header><div class=header__inner><div class=header__logo><a href=https://artur-rios.github.io/dotnet-messaging/><div class=logo>Dotnet Messaging</div></a></div><ul class="menu menu--mobile"><li class=menu__trigger>Menu&nbsp;▾</li><li><ul class=menu__dropdown><li><a href=https://www.artur-rios.tech/>Author</a></li><li><a href=https://github.com/artur-rios/dotnet-messaging>GitHub</a></li><li><a href=https://artur-rios.github.io/dotnet-messaging/coverage-report>Test Coverage</a></li></ul></li></ul></div><nav class=navigation-menu><ul class="navigation-menu__inner menu--desktop"><li><a href=https://www.artur-rios.tech/>Author</a></li><li><a href=https://github.com/artur-rios/dotnet-messaging>GitHub</a></li><li><a href=https://artur-rios.github.io/dotnet-messaging/coverage-report>Test Coverage</a></li></ul></nav></header><div class=content><div class=index-content><p>Utilities for different messaging formats and protocols for .NET applications.
+Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.
+Contributions are welcome!</p><h2 id=versioning>Versioning</h2><p>Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
+changes increment the minor version; fixes or tweaks increment the patch.</p><h2 id=build-test-and-publish>Build, test and publish</h2><p>Use the official <a href=https://learn.microsoft.com/en-us/dotnet/core/tools/>.NET CLI</a> to build, test and publish the project and Git for source control.
+If you want, optional helper toolsets I built to facilitate these tasks are available:</p><ul><li><a href=https://github.com/artur-rios/dotnet-tools>Dotnet Tools</a></li><li><a href=https://github.com/artur-rios/python-dotnet-tools>Python Dotnet Tools</a></li></ul><h2 id=installation>Installation</h2><p>Install the package via the .NET CLI:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet add package ArturRios.Messaging
+</span></span></code></pre></div><p>Or via the NuGet Package Manager:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-powershell data-lang=powershell><span style=display:flex><span>Install-Package ArturRios.Messaging
+</span></span></code></pre></div><h2 id=requirements>Requirements</h2><ul><li>.NET 10.0 or later</li><li>Environment variables for service configuration (see <a href=#configuration>Configuration</a>)</li></ul><h2 id=features>Features</h2><ul><li><strong>Email</strong> — send transactional emails via <a href=https://www.mailgun.com/>Mailgun</a> with a clean async interface</li><li>Designed for dependency injection — register services through the standard <code>IServiceCollection</code> pattern</li><li>Returns structured <code>ProcessOutput</code> results (from <a href=https://www.nuget.org/packages/ArturRios.Output>ArturRios.Output</a>) rather than throwing exceptions, making error handling predictable</li></ul><h2 id=configuration>Configuration</h2><h3 id=mailgun-email-service>Mailgun Email Service</h3><p>Set the following environment variables before calling <code>SendEmailAsync</code>:</p><table><thead><tr><th>Variable</th><th>Description</th></tr></thead><tbody><tr><td><code>MAILGUN_API_KEY</code></td><td>Your Mailgun private API key</td></tr><tr><td><code>MAILGUN_DOMAIN</code></td><td>Your verified Mailgun sending domain</td></tr></tbody></table><h2 id=usage>Usage</h2><h3 id=dependency-injection>Dependency Injection</h3><p>Register <code>MailgunEmailService</code> with your DI container:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>using</span> ArturRios.Messaging.Email;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddHttpClient&lt;IEmailService, MailgunEmailService&gt;();
+</span></span></code></pre></div><h3 id=sending-an-email>Sending an Email</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>using</span> ArturRios.Messaging.Email;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>NotificationService</span>(IEmailService emailService)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task NotifyAsync(<span style=color:#66d9ef>string</span> recipient)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> output = <span style=color:#66d9ef>await</span> emailService.SendEmailAsync(
+</span></span><span style=display:flex><span>            to: recipient,
+</span></span><span style=display:flex><span>            subject: <span style=color:#e6db74>&#34;Welcome!&#34;</span>,
+</span></span><span style=display:flex><span>            body: <span style=color:#e6db74>&#34;Thanks for signing up.&#34;</span>
+</span></span><span style=display:flex><span>        );
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (!output.Success)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> error <span style=color:#66d9ef>in</span> output.Errors)
+</span></span><span style=display:flex><span>                Console.WriteLine(error);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=without-dependency-injection>Without Dependency Injection</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>using</span> ArturRios.Messaging.Email;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.Extensions.Logging.Abstractions;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> service = <span style=color:#66d9ef>new</span> MailgunEmailService(NullLogger&lt;MailgunEmailService&gt;.Instance);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> output = <span style=color:#66d9ef>await</span> service.SendEmailAsync(<span style=color:#e6db74>&#34;to@example.com&#34;</span>, <span style=color:#e6db74>&#34;Hello&#34;</span>, <span style=color:#e6db74>&#34;World&#34;</span>);
+</span></span></code></pre></div><h2 id=class-diagram>Class Diagram</h2><pre tabindex=0><code class=language-mermaid data-lang=mermaid>classDiagram
+    class IEmailService {
+        &lt;&lt;interface&gt;&gt;
+        +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+    }
+
+    class MailgunEmailService {
+        -ILogger~MailgunEmailService~ _logger
+        -HttpClient _httpClient
+        -string MailgunApiBaseUrl$
+        -string MailgunApiVersion$
+        -string MailgunMessagesEndpoint$
+        +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
+        +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+    }
+
+    class ProcessOutput {
+        &lt;&lt;ArturRios.Output&gt;&gt;
+        +bool Success
+        +IEnumerable~string~ Errors
+        +AddError(message: string) void
+    }
+
+    IEmailService &lt;|.. MailgunEmailService : implements
+    MailgunEmailService ..&gt; ProcessOutput : returns
+</code></pre><h2 id=dependencies>Dependencies</h2><table><thead><tr><th>Package</th><th>Purpose</th></tr></thead><tbody><tr><td><a href=https://www.nuget.org/packages/ArturRios.Output>ArturRios.Output</a></td><td>Structured operation result type (<code>ProcessOutput</code>)</td></tr></tbody></table><h2 id=legal-details>Legal Details</h2><p>This project is licensed under the <a href=https://en.wikipedia.org/wiki/MIT_License>MIT License</a>. A copy of the license is available at <a href=./LICENSE>LICENSE</a> in the repository.</p></div><div class=posts><div class=pagination><div class=pagination__buttons></div></div></div></div><footer class=footer><div class=footer__inner><div class=copyright><span>© 2026 Powered by <a href=https://gohugo.io>Hugo</a></span>
+<span>:: <a href=https://github.com/mirus-ua/hugo-theme-re-terminal target=_blank>Theme</a> made by <a href=https://github.com/mirus-ua target=_blank>Mirus</a></span></div></div></footer><script type=text/javascript src=/dotnet-messaging/bundle.min.js></script></div></body></html>
