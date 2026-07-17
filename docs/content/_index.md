@@ -2,22 +2,12 @@
 title = 'Dotnet Messaging'
 +++
 
+# Documentation
+
 Utilities for different messaging formats and protocols for .NET applications.
 Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.
+
 Contributions are welcome!
-
-## Versioning
-
-Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
-changes increment the minor version; fixes or tweaks increment the patch.
-
-## Build, test and publish
-
-Use the official [.NET CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/) to build, test and publish the project and Git for source control.
-If you want, optional helper toolsets I built to facilitate these tasks are available:
-
-- [Dotnet Tools](https://github.com/artur-rios/dotnet-tools)
-- [Python Dotnet Tools](https://github.com/artur-rios/python-dotnet-tools)
 
 ## Installation
 
@@ -37,6 +27,12 @@ Install-Package ArturRios.Messaging
 
 - .NET 10.0 or later
 - Environment variables for service configuration (see [Configuration](#configuration))
+
+## Dependencies
+
+| Package | Purpose |
+|---|---|
+| [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output) | Structured operation result type (`ProcessOutput`) |
 
 ## Features
 
@@ -131,11 +127,18 @@ classDiagram
     MailgunEmailService ..> ProcessOutput : returns
 ```
 
-## Dependencies
+## Versioning
 
-| Package | Purpose |
-|---|---|
-| [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output) | Structured operation result type (`ProcessOutput`) |
+Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
+changes increment the minor version; fixes or tweaks increment the patch.
+
+## Build, test and publish
+
+Use the official [.NET CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/) to build, test and publish the project and Git for source control.
+If you want, optional helper toolsets I built to facilitate these tasks are available:
+
+- [Dotnet Tools](https://github.com/artur-rios/dotnet-tools)
+- [Python Dotnet Tools](https://github.com/artur-rios/python-dotnet-tools)
 
 ## Legal Details
 
