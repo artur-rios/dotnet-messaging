@@ -46,10 +46,14 @@ Install-Package ArturRios.Messaging
 
 Set the following environment variables before calling `SendEmailAsync`:
 
-| Variable | Description |
-|---|---|
-| `MAILGUN_API_KEY` | Your Mailgun private API key |
-| `MAILGUN_DOMAIN` | Your verified Mailgun sending domain |
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `MAILGUN_API_KEY` | Yes | — | Your Mailgun private API key |
+| `MAILGUN_DOMAIN` | Yes | — | Your verified Mailgun sending domain |
+| `MAILGUN_API_VERSION` | No | `v3` | Mailgun API version used to build the request URL. When unset or blank, `v3` is used |
+
+Requests are sent to `https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages`.
+Environment variables are read on every `SendEmailAsync` call, so changes take effect without recreating the service.
 
 ## Usage
 
@@ -110,10 +114,14 @@ classDiagram
         -ILogger~MailgunEmailService~ _logger
         -HttpClient _httpClient
         -string MailgunApiBaseUrl$
-        -string MailgunApiVersion$
         -string MailgunMessagesEndpoint$
+        +string ApiKeyVariable$
+        +string DomainVariable$
+        +string ApiVersionVariable$
+        +string DefaultMailgunApiVersion$
         +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+        -GetApiVersion() string$
     }
 
     class ProcessOutput {

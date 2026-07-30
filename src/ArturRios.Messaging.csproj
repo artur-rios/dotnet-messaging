@@ -18,7 +18,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>utilities;messaging;email;mailgun;.net</PackageTags>
     <RepositoryUrl>https://github.com/artur-rios/dotnet-messaging</RepositoryUrl>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="" />
@@ -27,4 +27,3 @@
     <PackageReference Include="ArturRios.Output" Version="2.0.1" />
   </ItemGroup>
 </Project>
-

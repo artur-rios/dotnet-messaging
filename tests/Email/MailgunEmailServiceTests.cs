@@ -13,6 +13,7 @@ public class MailgunEmailServiceTests : IDisposable
 {
     private const string TestApiKey = "test-api-key";
     private const string TestDomain = "sandbox.mailgun.org";
+    private const string TestApiVersion = "v4";
     private const string TestTo = "recipient@example.com";
     private const string TestSubject = "Test Subject";
     private const string TestBody = "Test email body";
@@ -23,8 +24,9 @@ public class MailgunEmailServiceTests : IDisposable
 
     public MailgunEmailServiceTests()
     {
-        Environment.SetEnvironmentVariable("MAILGUN_API_KEY", TestApiKey);
-        Environment.SetEnvironmentVariable("MAILGUN_DOMAIN", TestDomain);
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, TestApiKey);
+        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, TestDomain);
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
 
         _mockHandler = new MockHttpMessageHandler();
         _httpClient = new HttpClient(_mockHandler);
@@ -33,8 +35,9 @@ public class MailgunEmailServiceTests : IDisposable
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("MAILGUN_API_KEY", null);
-        Environment.SetEnvironmentVariable("MAILGUN_DOMAIN", null);
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
+        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
         _httpClient.Dispose();
     }
 
@@ -92,7 +95,49 @@ public class MailgunEmailServiceTests : IDisposable
 
         await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
 
-        var expectedUrl = $"https://api.mailgun.net/v3/{TestDomain}/messages";
+        var expectedUrl =
+            $"https://api.mailgun.net/{MailgunEmailService.DefaultMailgunApiVersion}/{TestDomain}/messages";
+        Assert.Equal(expectedUrl, _mockHandler.LastRequest!.RequestUri!.ToString());
+    }
+
+    [Fact]
+    public async Task GivenApiVersionConfigured_WhenSendEmailAsyncIsCalled_ThenRequestUsesConfiguredApiVersion()
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, TestApiVersion);
+        _mockHandler.SetResponse(HttpStatusCode.OK, "{}");
+
+        await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
+
+        var expectedUrl = $"https://api.mailgun.net/{TestApiVersion}/{TestDomain}/messages";
+        Assert.Equal(expectedUrl, _mockHandler.LastRequest!.RequestUri!.ToString());
+    }
+
+    [Fact]
+    public async Task GivenApiVersionNotConfigured_WhenSendEmailAsyncIsCalled_ThenRequestUsesDefaultApiVersion()
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
+        _mockHandler.SetResponse(HttpStatusCode.OK, "{}");
+
+        await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
+
+        var expectedUrl =
+            $"https://api.mailgun.net/{MailgunEmailService.DefaultMailgunApiVersion}/{TestDomain}/messages";
+        Assert.Equal(expectedUrl, _mockHandler.LastRequest!.RequestUri!.ToString());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GivenApiVersionIsBlank_WhenSendEmailAsyncIsCalled_ThenRequestUsesDefaultApiVersion(
+        string apiVersion)
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, apiVersion);
+        _mockHandler.SetResponse(HttpStatusCode.OK, "{}");
+
+        await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
+
+        var expectedUrl =
+            $"https://api.mailgun.net/{MailgunEmailService.DefaultMailgunApiVersion}/{TestDomain}/messages";
         Assert.Equal(expectedUrl, _mockHandler.LastRequest!.RequestUri!.ToString());
     }
 
