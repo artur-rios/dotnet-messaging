@@ -213,7 +213,7 @@ var assemblies = [
   {
     "name": "ArturRios.Messaging",
     "classes": [
-      { "name": "ArturRios.Messaging.Email.MailgunEmailService", "rp": "ArturRios.Messaging_MailgunEmailService.html", "cl": 31, "ucl": 0, "cal": 31, "tl": 57, "cb": 3, "tb": 4, "cm": 2, "fcm": 1, "tm": 2, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { "crp": 2,  "cc": 2,  "cov": 100,  "bcov": 50.0 } },
+      { "name": "ArturRios.Messaging.Email.MailgunEmailService", "rp": "ArturRios.Messaging_MailgunEmailService.html", "cl": 36, "ucl": 0, "cal": 36, "tl": 114, "cb": 5, "tb": 6, "cm": 3, "fcm": 1, "tm": 3, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { "crp": 2,  "cc": 2,  "cov": 100,  "bcov": 50.0 } },
     ]},
 ];
 
