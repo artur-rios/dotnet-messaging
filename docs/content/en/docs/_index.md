@@ -1,8 +1,10 @@
-+++
-title = 'Dotnet Messaging'
-+++
-
-# Documentation
+---
+title: Documentation
+linkTitle: Documentation
+weight: 20
+description: >-
+  Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and...
+---
 
 Utilities for different messaging formats and protocols for .NET applications.
 Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.

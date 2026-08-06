@@ -1,26 +1,98 @@
 baseURL = 'https://artur-rios.github.io/dotnet-messaging/'
-languageCode = 'en-us'
 title = 'Dotnet Messaging'
-theme = 'hugo-theme-re-terminal'
+
+# Docsy is installed as the @docsy/theme NPM package (see package.json)
+theme = '@docsy/theme'
+themesDir = 'node_modules'
+
+enableRobotsTXT = true
+enableGitInfo = false
+
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = false
+locale = 'en-us'
+
+# Highlighting and Markdown
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    style = 'tango'
+    guessSyntax = true
+    lineNos = false
+    noClasses = false
+
+[taxonomies]
+  tag = 'tags'
+  category = 'categories'
 
 [module]
-[[module.mounts]]
-source = 'coverage-report'
-target = 'static/coverage-report'
+  [[module.mounts]]
+    source = 'content/en'
+    target = 'content'
+  [[module.mounts]]
+    source = 'coverage-report'
+    target = 'static/coverage-report'
+  [[module.mounts]]
+    source = 'static'
+    target = 'static'
 
-[params.logo]
-logoText = 'Dotnet Messaging'
+[languages]
+  [languages.en]
+    label = 'English'
+    weight = 1
+    title = 'Dotnet Messaging'
+    [languages.en.params]
+      description = "Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."
 
-[menu]
+[params]
+  copyright.authors = 'Artur Rios | [MIT License](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)'
+  privacy_policy = ''
+  github_repo = 'https://github.com/artur-rios/dotnet-messaging'
+  github_branch = 'main'
+  github_subdir = 'docs'
+  offlineSearch = true
+  prism_syntax_highlighting = false
+
+  [params.ui]
+    breadcrumb_disable = false
+    navbar_logo = false
+    navbar_translucent_over_cover_disable = false
+    sidebar_menu_compact = false
+    sidebar_menu_foldable = true
+    sidebar_search_disable = false
+    showLightDarkModeMenu = true
+
+    [params.ui.feedback]
+      enable = false
+
+    [params.ui.readingtime]
+      enable = false
+
+  [params.links]
+    [[params.links.user]]
+      name = 'Author'
+      url = 'https://www.artur-rios.tech/'
+      icon = 'fa fa-user'
+      desc = "The author's website"
+    [[params.links.developer]]
+      name = 'GitHub'
+      url = 'https://github.com/artur-rios/dotnet-messaging'
+      icon = 'fab fa-github'
+      desc = 'Source code, issues and releases'
+
 [[menu.main]]
-identifier = "author"
-name = "Author"
-url = "https://www.artur-rios.tech/"
+  name = 'Documentation'
+  weight = 10
+  url = '/docs/'
+
 [[menu.main]]
-identifier = "github"
-name = "GitHub"
-url = "https://github.com/artur-rios/dotnet-messaging"
+  name = 'Test Coverage'
+  weight = 20
+  url = '/coverage-report/'
+
 [[menu.main]]
-identifier = "test-coverage"
-name = "Test Coverage"
-url = "https://artur-rios.github.io/dotnet-messaging/coverage-report"
+  name = 'GitHub'
+  weight = 30
+  url = 'https://github.com/artur-rios/dotnet-messaging'
+  pre = '<i class="fab fa-github"></i>'
