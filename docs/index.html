@@ -1,0 +1,134 @@
+<!doctype html><html itemscope itemtype=http://schema.org/WebPage lang=en class=no-js data-theme-init><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=color-scheme content="light dark"><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#000000"><style>html{background:Canvas;color:CanvasText}@media(prefers-color-scheme:dark){html{background:#0b0d12;color:#e6e6e6}}html[data-theme-init] *{transition:none!important}</style><script>(function(){const t="td-color-theme",n=localStorage.getItem(t);let e=n||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");e==="auto"&&(e=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),document.documentElement.setAttribute("data-bs-theme",e)})()</script><link rel=alternate type=application/rss+xml href=https://artur-rios.github.io/dotnet-messaging/docs/index.xml><meta name=robots content="index, follow"><title>Documentation | Dotnet Messaging</title><meta name=description content="Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."><meta property="og:url" content="https://artur-rios.github.io/dotnet-messaging/docs/"><meta property="og:site_name" content="Dotnet Messaging"><meta property="og:title" content="Documentation"><meta property="og:description" content="Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."><meta property="og:locale" content="en_us"><meta property="og:type" content="website"><meta itemprop=name content="Documentation"><meta itemprop=description content="Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."><meta itemprop=wordCount content="428"><meta name=twitter:card content="summary"><meta name=twitter:title content="Documentation"><meta name=twitter:description content="Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."><link rel=preload href=/dotnet-messaging/scss/main.min.550997bd630e34cadce28fffab3bdd879c0f8bd313125cf4fd08902328077df9.css as=style integrity="sha256-VQmXvWMONMrc4o//qzvdh5wPi9MTElz0/QiQIygHffk=" crossorigin=anonymous><link href=/dotnet-messaging/scss/main.min.550997bd630e34cadce28fffab3bdd879c0f8bd313125cf4fd08902328077df9.css rel=stylesheet integrity="sha256-VQmXvWMONMrc4o//qzvdh5wPi9MTElz0/QiQIygHffk=" crossorigin=anonymous><script src=https://code.jquery.com/jquery-3.7.1.min.js integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin=anonymous></script><script defer src=https://unpkg.com/lunr@2.3.9/lunr.min.js integrity=sha384-203J0SNzyqHby3iU6hzvzltrWi/M41wOP5Gu+BiJMz5nwKykbkUx8Kp7iti0Lpli crossorigin=anonymous></script></head><body class=td-section><header><nav class="td-navbar js-navbar-scroll"><div class="td-navbar-container container-fluid flex-column flex-md-row"><a class=navbar-brand href=/dotnet-messaging/><span class="navbar-brand__logo navbar-logo"></span><span class=navbar-brand__name>Dotnet Messaging</span></a><div class="td-navbar__main td-navbar-nav-scroll td-navbar-nav-scroll--indicator" id=main_navbar><div class="scroll-indicator scroll-left"></div><ul class=navbar-nav><li class=nav-item><a class=nav-link href=/dotnet-messaging/docs/><span>Documentation</span></a></li><li class=nav-item><a class=nav-link href=/dotnet-messaging/coverage-report/><span>Test Coverage</span></a></li><li class=nav-item><a class=nav-link href=https://github.com/artur-rios/dotnet-messaging target=_blank rel=noopener><i class="fab fa-github"></i><span>GitHub</span></a></li><li class="nav-item td-navbar__light-dark-menu"><div class="td-light-dark-menu dropdown"><svg class="d-none"><symbol id="check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5.0 010 .708l-7 7a.5.5.0 01-.708.0l-3.5-3.5a.5.5.0 11.708-.708L6.5 10.293l6.646-6.647a.5.5.0 01.708.0z"/></symbol><symbol id="circle-half" viewBox="0 0 16 16"><path d="M8 15A7 7 0 108 1v14zm0 1A8 8 0 118 0a8 8 0 010 16z"/></symbol><symbol id="moon-stars-fill" viewBox="0 0 16 16"><path d="M6 .278a.768.768.0 01.08.858 7.208 7.208.0 00-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527.0 1.04-.055 1.533-.16a.787.787.0 01.81.316.733.733.0 01-.031.893A8.349 8.349.0 018.344 16C3.734 16 0 12.286.0 7.71.0 4.266 2.114 1.312 5.124.06A.752.752.0 016 .278z"/><path d="M10.794 3.148a.217.217.0 01.412.0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217.0 010 .412l-1.162.387A1.734 1.734.0 0011.593 7.69l-.387 1.162a.217.217.0 01-.412.0l-.387-1.162A1.734 1.734.0 009.31 6.593l-1.162-.387a.217.217.0 010-.412l1.162-.387a1.734 1.734.0 001.097-1.097l.387-1.162zM13.863.099a.145.145.0 01.274.0l.258.774c.115.346.386.617.732.732l.774.258a.145.145.0 010 .274l-.774.258a1.156 1.156.0 00-.732.732l-.258.774a.145.145.0 01-.274.0l-.258-.774a1.156 1.156.0 00-.732-.732l-.774-.258a.145.145.0 010-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/></symbol><symbol id="sun-fill" viewBox="0 0 16 16"><path d="M8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.5.5.0 01.5.5v2a.5.5.0 01-1 0v-2A.5.5.0 018 0zm0 13a.5.5.0 01.5.5v2a.5.5.0 01-1 0v-2A.5.5.0 018 13zm8-5a.5.5.0 01-.5.5h-2a.5.5.0 010-1h2a.5.5.0 01.5.5zM3 8a.5.5.0 01-.5.5h-2a.5.5.0 010-1h2A.5.5.0 013 8zm10.657-5.657a.5.5.0 010 .707l-1.414 1.415a.5.5.0 11-.707-.708l1.414-1.414a.5.5.0 01.707.0zm-9.193 9.193a.5.5.0 010 .707L3.05 13.657a.5.5.0 01-.707-.707l1.414-1.414a.5.5.0 01.707.0zm9.193 2.121a.5.5.0 01-.707.0l-1.414-1.414a.5.5.0 01.707-.707l1.414 1.414a.5.5.0 010 .707zM4.464 4.465a.5.5.0 01-.707.0L2.343 3.05a.5.5.0 11.707-.707l1.414 1.414a.5.5.0 010 .708z"/></symbol></svg>
+<button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center" id=bd-theme type=button aria-expanded=false data-bs-toggle=dropdown aria-label="Toggle theme (auto)">
+<svg class="bi my-1 theme-icon-active"><use href="#circle-half"/></svg></button><ul class=dropdown-menu aria-labelledby=bd-theme><li><button type=button class="dropdown-item d-flex align-items-center" data-bs-theme-value=light aria-pressed=false>
+<svg class="bi me-2 opacity-50"><use href="#sun-fill"/></svg>
+Light
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center" data-bs-theme-value=dark aria-pressed=false>
+<svg class="bi me-2 opacity-50"><use href="#moon-stars-fill"/></svg>
+Dark
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center active" data-bs-theme-value=auto aria-pressed=true>
+<svg class="bi me-2 opacity-50"><use href="#circle-half"/></svg>
+Auto
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/dotnet-messaging/offline-search-index.88c2820782b4b26fdadc1bd29369090a.json data-offline-search-base-href=/ data-offline-search-max-results=10></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main data-bs-spy=scroll data-bs-target=.td-toc data-bs-root-margin="0px 0px -10%"><div class="row flex-xl-nowrap"><aside class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none"><div id=td-sidebar-menu class=td-sidebar__inner><form class="td-sidebar__search d-flex align-items-center"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/dotnet-messaging/offline-search-index.88c2820782b4b26fdadc1bd29369090a.json data-offline-search-base-href=/ data-offline-search-max-results=10></div><button class="btn btn-link td-sidebar__toggle" type=button data-bs-toggle=collapse data-bs-target=#td-section-nav aria-controls=td-section-nav aria-expanded=false aria-label="Toggle section navigation"></button></form><nav class="td-sidebar-nav collapse foldable-nav" id=td-section-nav><ul class="td-sidebar-nav__section pe-md-3 ul-0"><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child active-path" id=m-dotnet-messagingdocs-li><a href=/dotnet-messaging/docs/ class="align-left ps-0 active td-sidebar-link td-sidebar-link__section tree-root" id=m-dotnet-messagingdocs><span class=td-sidebar-nav-active-item>Documentation</span></a></li></ul></nav></div></aside><aside class=td-sidebar-toc><div class="td-page-meta ms-2 pb-1 pt-2 mb-0"><a href=https://github.com/artur-rios/dotnet-messaging/tree/main/docs/content/en/docs/_index.md class="td-page-meta--view td-page-meta__view" target=_blank rel=noopener><i class="fa-solid fa-file-lines fa-fw"></i> View page source</a>
+<a href=https://github.com/artur-rios/dotnet-messaging/edit/main/docs/content/en/docs/_index.md class="td-page-meta--edit td-page-meta__edit" target=_blank rel=noopener><i class="fa-solid fa-pen-to-square fa-fw"></i> Edit this page</a>
+<a href="https://github.com/artur-rios/dotnet-messaging/new/main/docs/content/en/docs?filename=change-me.md&amp;value=---%0Atitle%3A+%22Long+Page+Title%22%0AlinkTitle%3A+%22Short+Nav+Title%22%0Aweight%3A+100%0Adescription%3A+%3E-%0A+++++Page+description+for+heading+and+indexes.%0A---%0A%0A%23%23+Heading%0A%0AEdit+this+template+to+create+your+new+page.%0A%0A%2A+Give+it+a+good+name%2C+ending+in+%60.md%60+-+e.g.+%60get-started.md%60%0A%2A+Edit+the+%22front+matter%22+section+at+the+top+of+the+page+%28weight+controls+how+its+ordered+amongst+other+pages+in+the+same+directory%3B+lowest+number+first%29.%0A%2A+Add+a+good+commit+message+at+the+bottom+of+the+page+%28%3C80+characters%3B+use+the+extended+description+field+for+more+detail%29.%0A%2A+Create+a+new+branch+so+you+can+preview+your+new+file+and+request+a+review+via+Pull+Request.%0A" class="td-page-meta--child td-page-meta__child" target=_blank rel=noopener><i class="fa-solid fa-pen-to-square fa-fw"></i> Create child page</a>
+<a href="https://github.com/artur-rios/dotnet-messaging/issues/new?title=Documentation" class="td-page-meta--issue td-page-meta__issue" target=_blank rel=noopener><i class="fa-solid fa-list-check fa-fw"></i> Create documentation issue</a></div><div class=td-toc data-proofer-ignore><div class=td-toc-title><span class=td-toc-title__text>On this page</span>
+<a class=td-toc-title__link title="Top of page" href=#></a></div><nav id=TableOfContents><ul><li><a href=#installation>Installation</a></li><li><a href=#requirements>Requirements</a></li><li><a href=#dependencies>Dependencies</a></li><li><a href=#features>Features</a></li><li><a href=#configuration>Configuration</a><ul><li><a href=#mailgun-email-service>Mailgun Email Service</a></li></ul></li><li><a href=#usage>Usage</a><ul><li><a href=#dependency-injection>Dependency Injection</a></li><li><a href=#sending-an-email>Sending an Email</a></li><li><a href=#without-dependency-injection>Without Dependency Injection</a></li></ul></li><li><a href=#class-diagram>Class Diagram</a></li><li><a href=#versioning>Versioning</a></li><li><a href=#build-test-and-publish>Build, test and publish</a></li><li><a href=#legal-details>Legal Details</a></li></ul></nav></div></aside><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><nav aria-label=breadcrumb class="td-breadcrumbs td-breadcrumbs__single"><ol class=breadcrumb><li class="breadcrumb-item active" aria-current=page>Documentation</li></ol></nav><div class=td-content><h1>Documentation</h1><div class=lead>Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and&mldr;</div><header class=article-meta></header><p>Utilities for different messaging formats and protocols for .NET applications.
+Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.</p><p>Contributions are welcome!</p><h2 id=installation>Installation</h2><p>Install the package via the .NET CLI:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>dotnet add package ArturRios.Messaging
+</span></span></code></pre></div><p>Or via the NuGet Package Manager:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-powershell data-lang=powershell><span class=line><span class=cl><span class=nb>Install-Package</span> <span class=n>ArturRios</span><span class=p>.</span><span class=py>Messaging</span>
+</span></span></code></pre></div><h2 id=requirements>Requirements</h2><ul><li>.NET 10.0 or later</li><li>Environment variables for service configuration (see <a href=/dotnet-messaging/docs/#configuration>Configuration</a>)</li></ul><h2 id=dependencies>Dependencies</h2><table><thead><tr><th>Package</th><th>Purpose</th></tr></thead><tbody><tr><td><a href=https://www.nuget.org/packages/ArturRios.Output>ArturRios.Output</a></td><td>Structured operation result type (<code>ProcessOutput</code>)</td></tr></tbody></table><h2 id=features>Features</h2><ul><li><strong>Email</strong> — send transactional emails via <a href=https://www.mailgun.com/>Mailgun</a> with a clean async interface</li><li>Designed for dependency injection — register services through the standard <code>IServiceCollection</code> pattern</li><li>Returns structured <code>ProcessOutput</code> results (from <a href=https://www.nuget.org/packages/ArturRios.Output>ArturRios.Output</a>) rather than throwing exceptions, making error handling predictable</li></ul><h2 id=configuration>Configuration</h2><h3 id=mailgun-email-service>Mailgun Email Service</h3><p>Set the following environment variables before calling <code>SendEmailAsync</code>:</p><table><thead><tr><th>Variable</th><th>Required</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>MAILGUN_API_KEY</code></td><td>Yes</td><td>—</td><td>Your Mailgun private API key</td></tr><tr><td><code>MAILGUN_DOMAIN</code></td><td>Yes</td><td>—</td><td>Your verified Mailgun sending domain</td></tr><tr><td><code>MAILGUN_API_VERSION</code></td><td>No</td><td><code>v3</code></td><td>Mailgun API version used to build the request URL. When unset or blank, <code>v3</code> is used</td></tr></tbody></table><p>Requests are sent to <code>https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages</code>.
+Environment variables are read on every <code>SendEmailAsync</code> call, so changes take effect without recreating the service.</p><h2 id=usage>Usage</h2><h3 id=dependency-injection>Dependency Injection</h3><p>Register <code>MailgunEmailService</code> with your DI container:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>ArturRios.Messaging.Email</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>builder</span><span class=p>.</span><span class=n>Services</span><span class=p>.</span><span class=n>AddHttpClient</span><span class=p>&lt;</span><span class=n>IEmailService</span><span class=p>,</span> <span class=n>MailgunEmailService</span><span class=p>&gt;();</span>
+</span></span></code></pre></div><h3 id=sending-an-email>Sending an Email</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>ArturRios.Messaging.Email</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>public</span> <span class=k>class</span> <span class=nc>NotificationService</span><span class=p>(</span><span class=n>IEmailService</span> <span class=n>emailService</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kd>public</span> <span class=kd>async</span> <span class=n>Task</span> <span class=n>NotifyAsync</span><span class=p>(</span><span class=kt>string</span> <span class=n>recipient</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kt>var</span> <span class=n>output</span> <span class=p>=</span> <span class=k>await</span> <span class=n>emailService</span><span class=p>.</span><span class=n>SendEmailAsync</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=n>to</span><span class=p>:</span> <span class=n>recipient</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>subject</span><span class=p>:</span> <span class=s>&#34;Welcome!&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>body</span><span class=p>:</span> <span class=s>&#34;Thanks for signing up.&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(!</span><span class=n>output</span><span class=p>.</span><span class=n>Success</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>foreach</span> <span class=p>(</span><span class=kt>var</span> <span class=n>error</span> <span class=k>in</span> <span class=n>output</span><span class=p>.</span><span class=n>Errors</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>                <span class=n>Console</span><span class=p>.</span><span class=n>WriteLine</span><span class=p>(</span><span class=n>error</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=without-dependency-injection>Without Dependency Injection</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-csharp data-lang=csharp><span class=line><span class=cl><span class=k>using</span> <span class=nn>ArturRios.Messaging.Email</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>using</span> <span class=nn>Microsoft.Extensions.Logging.Abstractions</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>service</span> <span class=p>=</span> <span class=k>new</span> <span class=n>MailgunEmailService</span><span class=p>(</span><span class=n>NullLogger</span><span class=p>&lt;</span><span class=n>MailgunEmailService</span><span class=p>&gt;.</span><span class=n>Instance</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=kt>var</span> <span class=n>output</span> <span class=p>=</span> <span class=k>await</span> <span class=n>service</span><span class=p>.</span><span class=n>SendEmailAsync</span><span class=p>(</span><span class=s>&#34;to@example.com&#34;</span><span class=p>,</span> <span class=s>&#34;Hello&#34;</span><span class=p>,</span> <span class=s>&#34;World&#34;</span><span class=p>);</span>
+</span></span></code></pre></div><h2 id=class-diagram>Class Diagram</h2><pre class=mermaid>classDiagram
+    class IEmailService {
+        &lt;&lt;interface&gt;&gt;
+        &#43;SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+    }
+
+    class MailgunEmailService {
+        -ILogger~MailgunEmailService~ _logger
+        -HttpClient _httpClient
+        -string MailgunApiBaseUrl$
+        -string MailgunMessagesEndpoint$
+        &#43;string ApiKeyVariable$
+        &#43;string DomainVariable$
+        &#43;string ApiVersionVariable$
+        &#43;string DefaultMailgunApiVersion$
+        &#43;MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
+        &#43;SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+        -GetApiVersion() string$
+    }
+
+    class ProcessOutput {
+        &lt;&lt;ArturRios.Output&gt;&gt;
+        &#43;bool Success
+        &#43;IEnumerable~string~ Errors
+        &#43;AddError(message: string) void
+    }
+
+    IEmailService &lt;|.. MailgunEmailService : implements
+    MailgunEmailService ..&gt; ProcessOutput : returns</pre><h2 id=versioning>Versioning</h2><p>Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
+changes increment the minor version; fixes or tweaks increment the patch.</p><h2 id=build-test-and-publish>Build, test and publish</h2><p>Use the official <a href=https://learn.microsoft.com/en-us/dotnet/core/tools/>.NET CLI</a> to build, test and publish the project and Git for source control.
+If you want, optional helper toolsets I built to facilitate these tasks are available:</p><ul><li><a href=https://github.com/artur-rios/dotnet-tools>Dotnet Tools</a></li><li><a href=https://github.com/artur-rios/python-dotnet-tools>Python Dotnet Tools</a></li></ul><h2 id=legal-details>Legal Details</h2><p>This project is licensed under the <a href=https://en.wikipedia.org/wiki/MIT_License>MIT License</a>. A copy of the license is available at <a href=https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE>LICENSE</a> in the repository.</p><div class=section-index></div></div></main></div></div><footer class="td-footer row d-print-none"><div class=container-fluid><div class="row mx-md-2"><div class="td-footer__left col-6 col-sm-4 order-sm-1"><ul class=td-footer__links-list><li class=td-footer__links-item data-bs-toggle=tooltip title=Author aria-label=Author><a href=https://www.artur-rios.tech/ aria-label=Author target=_blank rel=noopener><i class="fa fa-user"></i></a></li></ul></div><div class="td-footer__right col-6 col-sm-4 order-sm-3"><ul class=td-footer__links-list><li class=td-footer__links-item data-bs-toggle=tooltip title=GitHub aria-label=GitHub><a href=https://github.com/artur-rios/dotnet-messaging aria-label=GitHub target=_blank rel=noopener><i class="fab fa-github"></i></a></li></ul></div><div class="td-footer__center col-12 col-sm-4 py-2 order-sm-2"><span class=td-footer__copyright>&copy;
+2026
+<span class=td-footer__authors>Artur Rios | <a href=https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE>MIT License</a></span></span><span class=td-footer__all_rights_reserved>All Rights Reserved</span></div></div></div></footer></div><script type=module async>
+  import mermaid from "https:\/\/cdn.jsdelivr.net\/npm\/mermaid@latest\/dist\/mermaid.esm.min.mjs";
+
+  (function ($) {
+    if ($('.mermaid').length == 0) {
+      mermaid.initialize({ startOnLoad: false });
+      return;
+    }
+
+    var params = {};
+
+    
+    
+    var norm = function (defaultConfig, params) {
+      var result = {};
+      for (const key in defaultConfig) {
+        const keyLower = key.toLowerCase();
+        if (defaultConfig.hasOwnProperty(key) && params.hasOwnProperty(keyLower)) {
+          if (typeof defaultConfig[key] === "object") {
+            result[key] = norm(defaultConfig[key], params[keyLower]);
+          } else {
+            result[key] = params[keyLower];
+          }
+        }
+      }
+      return result;
+    };
+
+    var settings = norm(mermaid.mermaidAPI.defaultConfig, params);
+    settings.startOnLoad = true;
+    if ($('html[data-bs-theme="dark"]').length) {
+      settings.theme = 'dark';
+    }
+    mermaid.initialize(settings);
+
+    
+    const lightDarkModeThemeChangeHandler = function (mutationsList, observer) {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+          
+          
+          
+          location.reload();
+        }
+      }
+    };
+
+    const observer = new MutationObserver(lightDarkModeThemeChangeHandler);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-bs-theme']
+    });
+    
+
+  })(jQuery);
+</script><script src=/dotnet-messaging/js/main.min.0a5c5582cffd2efa07a3604a2a7d3f930a2594b6486c939d4b10485316b8017d.js integrity="sha256-ClxVgs/9LvoHo2BKKn0/kwollLZIbJOdSxBIUxa4AX0=" crossorigin=anonymous></script><script defer src=/dotnet-messaging/js/click-to-copy.min.24576ff9fe9f85bb1948ecae52ce227cafce53757a3ad52301f2a79260f6b97d.js integrity="sha256-JFdv+f6fhbsZSOyuUs4ifK/OU3V6OtUjAfKnkmD2uX0=" crossorigin=anonymous></script><script src=/dotnet-messaging/js/tabpane-persist.js></script></body></html>
