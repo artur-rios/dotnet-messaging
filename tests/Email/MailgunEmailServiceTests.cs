@@ -1,3 +1,4 @@
+﻿using ArturRios.Messaging.Tests;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +10,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArturRios.Messaging.Tests.Email;
 
+[Trait("Category", "Unit")]
+[Collection(MailgunEnvironmentCollection.Name)]
 public class MailgunEmailServiceTests : IDisposable
 {
     private const string TestApiKey = "test-api-key";
@@ -148,8 +151,7 @@ public class MailgunEmailServiceTests : IDisposable
 
         await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
 
-        var body = await _mockHandler.LastRequest!.Content!.ReadAsStringAsync();
-        var decoded = WebUtility.UrlDecode(body);
+        var decoded = WebUtility.UrlDecode(_mockHandler.LastRequestBody!);
         Assert.Contains($"to={TestTo}", decoded);
         Assert.Contains($"subject={TestSubject}", decoded);
         Assert.Contains($"text={TestBody}", decoded);
@@ -162,8 +164,7 @@ public class MailgunEmailServiceTests : IDisposable
 
         await _sut.SendEmailAsync(TestTo, TestSubject, TestBody);
 
-        var body = await _mockHandler.LastRequest!.Content!.ReadAsStringAsync();
-        Assert.Contains(TestDomain, body);
+        Assert.Contains(TestDomain, _mockHandler.LastRequestBody!);
     }
 }
 
@@ -174,6 +175,12 @@ internal class MockHttpMessageHandler : HttpMessageHandler
 
     public HttpRequestMessage? LastRequest { get; private set; }
 
+    /// <summary>
+    /// The request body, buffered while the request is still alive. The service disposes the request it
+    /// builds, so a test cannot read the content afterwards.
+    /// </summary>
+    public string? LastRequestBody { get; private set; }
+
     public void SetResponse(HttpStatusCode statusCode, string content)
     {
         _statusCode = statusCode;
@@ -183,6 +190,8 @@ internal class MockHttpMessageHandler : HttpMessageHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         LastRequest = request;
+        LastRequestBody = request.Content is null ? null : request.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+
         var response = new HttpResponseMessage(_statusCode)
         {
             Content = new StringContent(_responseContent, Encoding.UTF8, "application/json")
