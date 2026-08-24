@@ -57,6 +57,15 @@ Set the following environment variables before calling `SendEmailAsync`:
 Requests are sent to `https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages`.
 Environment variables are read on every `SendEmailAsync` call, so changes take effect without recreating the service.
 
+If `MAILGUN_API_KEY` or `MAILGUN_DOMAIN` is unset or blank, `SendEmailAsync` returns a failed
+`ProcessOutput` naming the missing variable and sends nothing — rather than issuing an unauthenticated
+request against an empty domain and reporting whatever Mailgun makes of it.
+
+The credential is attached to each request, never to the client's `DefaultRequestHeaders`. That matters
+because the documented registration is `AddHttpClient`, which hands the service a client it does not own:
+writing a credential onto that client's defaults would race with concurrent sends and leave the Mailgun key
+attached to every later request the client makes.
+
 ## Usage
 
 ### Dependency Injection
@@ -136,6 +145,20 @@ classDiagram
     IEmailService <|.. MailgunEmailService : implements
     MailgunEmailService ..> ProcessOutput : returns
 ```
+
+## Testing
+
+The test suite is xUnit, and every test is named with the Given / When / Then pattern. Every test class
+carries a `Category` trait, so the two kinds can be run — and reported — separately:
+
+```bash
+dotnet test src/ArturRios.Messaging.sln --filter "Category=Unit"
+dotnet test src/ArturRios.Messaging.sln --filter "Category=Functional"
+```
+
+Unit tests exercise the code in isolation against test doubles.
+Functional tests send through a real HTTP server on the loopback interface and inspect the request that arrives.
+CI runs the two as separate jobs, and both must pass before a pull request can be merged.
 
 ## Versioning
 
