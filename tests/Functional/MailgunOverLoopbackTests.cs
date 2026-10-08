@@ -45,6 +45,7 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
 
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "test-key");
         Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.example.org");
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
 
         return Task.CompletedTask;
     }
@@ -54,6 +55,7 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
         Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
 
         await _shutdown.CancelAsync();
 
@@ -118,7 +120,21 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
         Assert.Contains("to=to@example.com", decoded);
         Assert.Contains("subject=Welcome!", decoded);
         Assert.Contains("text=Thanks for signing up.", decoded);
-        Assert.Contains("postmaster@sandbox.example.org", decoded);
+        Assert.Contains("from=postmaster@sandbox.example.org&", decoded);
+        Assert.DoesNotContain("Mailgun Sandbox", decoded);
+    }
+
+    [Fact]
+    public async Task GivenAConfiguredSender_WhenSendingAnEmail_ThenTheRequestCarriesIt()
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, "Acme <no-reply@acme.example>");
+
+        await Service().SendEmailAsync("to@example.com", "Welcome!", "Body");
+
+        var decoded = WebUtility.UrlDecode(Assert.Single(_received).Body);
+
+        Assert.Contains("from=Acme <no-reply@acme.example>&", decoded);
+        Assert.DoesNotContain("postmaster@", decoded);
     }
 
     [Fact]
