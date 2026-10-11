@@ -1,7 +1,7 @@
 # Dotnet Messaging
 
 [![Docs](https://img.shields.io/badge/docs-website-blue)](https://artur-rios.github.io/dotnet-messaging)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/ArturRios.Messaging.svg)](https://www.nuget.org/packages/ArturRios.Messaging)
 
 Utilities for different messaging formats and protocols for .NET applications.
@@ -38,7 +38,8 @@ Install-Package ArturRios.Messaging
 
 - **Email** — send transactional emails via [Mailgun](https://www.mailgun.com/) with a clean async interface
 - Designed for dependency injection — register services through the standard `IServiceCollection` pattern
-- Returns structured `ProcessOutput` results (from [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output)) rather than throwing exceptions, making error handling predictable
+- Returns structured `ProcessOutput` results (from [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output)): missing configuration and messages Mailgun rejects are reported as errors rather than thrown. Transport failures from `HttpClient` (no network, a timeout) still throw
+- Cancellable — `SendEmailAsync` has an overload taking a `CancellationToken`, which aborts the HTTP request
 
 ## Configuration
 
@@ -50,19 +51,28 @@ Set the following environment variables before calling `SendEmailAsync`:
 |---|---|---|---|
 | `MAILGUN_API_KEY` | Yes | — | Your Mailgun private API key |
 | `MAILGUN_DOMAIN` | Yes | — | Your verified Mailgun sending domain |
+| `MAILGUN_FROM` | No | `postmaster@{MAILGUN_DOMAIN}` | The sender of every message: an address (`no-reply@example.com`) or a display name and an address (`Example <no-reply@example.com>`). When unset or blank, the domain's postmaster is used, with no display name |
 | `MAILGUN_API_VERSION` | No | `v3` | Mailgun API version used to build the request URL. When unset or blank, `v3` is used |
 
-Requests are sent to `https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages`.
+Requests are sent to `https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages`, as plain text
+from `MAILGUN_FROM`, or from `postmaster@{MAILGUN_DOMAIN}` when it is not set. Set `MAILGUN_FROM` in production:
+the postmaster default is a working fallback, not a sender recipients should see. Its address normally has to be
+on `MAILGUN_DOMAIN` (or another domain verified in Mailgun) for Mailgun to accept it.
 Environment variables are read on every `SendEmailAsync` call, so changes take effect without recreating the service.
 
-If `MAILGUN_API_KEY` or `MAILGUN_DOMAIN` is unset or blank, `SendEmailAsync` returns a failed
-`ProcessOutput` naming the missing variable and sends nothing — rather than issuing an unauthenticated
+If `MAILGUN_API_KEY` or `MAILGUN_DOMAIN` is unset or blank, or `MAILGUN_FROM` is set but is not exactly one
+address (with or without a display name), `SendEmailAsync` returns a failed `ProcessOutput` naming the
+variable and sends nothing — rather than issuing an unauthenticated
 request against an empty domain and reporting whatever Mailgun makes of it.
 
 The credential is attached to each request, never to the client's `DefaultRequestHeaders`. That matters
 because the documented registration is `AddHttpClient`, which hands the service a client it does not own:
 writing a credential onto that client's defaults would race with concurrent sends and leave the Mailgun key
 attached to every later request the client makes.
+
+The recipient address is personal data, so it is never logged. Log lines carry a stable reference to it instead —
+the first twelve hex characters of the SHA-256 of the trimmed, lower-cased address — which is enough to tell
+whether several lines concern the same recipient without disclosing who it is.
 
 ## Usage
 
@@ -100,6 +110,20 @@ public class NotificationService(IEmailService emailService)
 }
 ```
 
+### Cancellation
+
+Pass a `CancellationToken` — a request's `HttpContext.RequestAborted`, a worker's stopping token — to abort the
+send:
+
+```csharp
+var output = await emailService.SendEmailAsync(recipient, "Welcome!", "Thanks for signing up.", cancellationToken);
+```
+
+An already-canceled token throws `OperationCanceledException` before anything is sent; canceling mid-send aborts
+the HTTP request and throws the same. The three-argument overload is unchanged. On `IEmailService` the new
+overload has a default implementation, so existing implementations keep compiling: it checks the token and then
+calls the three-argument overload.
+
 ### Without Dependency Injection
 
 ```csharp
@@ -117,6 +141,7 @@ classDiagram
     class IEmailService {
         <<interface>>
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+        +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
     }
 
     class MailgunEmailService {
@@ -130,13 +155,15 @@ classDiagram
         +string DefaultMailgunApiVersion$
         +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
+        +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
+        -RecipientReference(address: string?) string$
         -GetApiVersion() string$
     }
 
     class ProcessOutput {
         <<ArturRios.Output>>
         +bool Success
-        +IEnumerable~string~ Errors
+        +List~string~ Errors
         +AddError(message: string) void
     }
 
@@ -144,54 +171,16 @@ classDiagram
     MailgunEmailService ..> ProcessOutput : returns
 ```
 
-## Testing
+## Changelog
 
-The test suite is xUnit, and every test is named with the Given / When / Then pattern. Every test class
-carries a `Category` trait, so the two kinds can be run — and reported — separately:
+Notable changes in each release are recorded in [CHANGELOG.md](https://github.com/artur-rios/dotnet-messaging/blob/main/CHANGELOG.md). Releases follow
+[Semantic Versioning](https://semver.org/).
 
-```bash
-dotnet test src/ArturRios.Messaging.sln --filter "Category=Unit"
-dotnet test src/ArturRios.Messaging.sln --filter "Category=Functional"
-```
+## Contributing
 
-Unit tests exercise the code in isolation against test doubles.
-Functional tests send through a real HTTP server on the loopback interface and inspect the request that arrives.
-CI runs the two as separate jobs, and both must pass before a pull request can be merged.
-
-## Branching and releases
-
-`develop` is the integration branch and the base for all new work; `main` only holds released code.
-
-1. Branch off `develop` — `feature/<name>` for features, `fix/<name>` for fixes (`chore/`, `refactor/`, `docs/`,
-   `ci/`, `test/`, `perf/` and `build/` are accepted too) — and open a pull request back into `develop`.
-2. To release, cut `release/<version>` from `develop`, set `<Version>` in `src/ArturRios.Messaging.csproj` to that version
-   and open a pull request into `main`. Only `release/*` branches can be merged into `main`.
-3. Once it is merged, tag the merge commit on `main` with the version. Pushing the tag publishes the package to
-   nuget.org and GitHub Packages:
-
-   ```bash
-   git switch main && git pull
-   git tag <version> && git push origin <version>
-   ```
-
-4. Open a pull request from `main` into `develop` to bring the release back into the integration branch.
-
-Pull requests into `develop` and `main` must pass the tests and the branch policy check. Only the repository owner can
-push version tags, and the publish workflow rejects tags that do not point at a commit on `main`.
-
-## Versioning
-
-Semantic Versioning (SemVer). Breaking changes result in a new major version. New methods or non-breaking behavior
-changes increment the minor version; fixes or tweaks increment the patch.
-
-## Build, test and publish
-
-Use the official [.NET CLI](https://learn.microsoft.com/en-us/dotnet/core/tools/) to build, test and publish the project and Git for source control.
-If you want, optional helper toolsets I built to facilitate these tasks are available:
-
-- [Dotnet Tools](https://github.com/artur-rios/dotnet-tools)
-- [Python Dotnet Tools](https://github.com/artur-rios/python-dotnet-tools)
+Building from source, running the tests, the branching model and the release process are described in
+[CONTRIBUTING.md](https://github.com/artur-rios/dotnet-messaging/blob/main/CONTRIBUTING.md).
 
 ## Legal Details
 
-This project is licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License). A copy of the license is available at [LICENSE](./LICENSE) in the repository.
+This project is licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License). A copy of the license is available at [LICENSE](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE) in the repository.
