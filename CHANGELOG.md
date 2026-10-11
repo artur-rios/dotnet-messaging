@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-11
+
 ### Added
 
 - `MAILGUN_FROM` (`MailgunEmailService.FromVariable`) sets the sender: an address, or a display name and an address
@@ -75,7 +77,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   through the `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` environment variables and returning a `ProcessOutput` from
   `ArturRios.Output`.
 
-[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.3.0...HEAD
+[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.2.0...1.3.0
 [1.2.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.0.0...v1.1.0
