@@ -58,7 +58,7 @@ locale = 'en-us'
       description = "Utilities for different messaging formats and protocols for .NET applications. Right now, the library includes a Mailgun email service, but more features and..."
 
 [params]
-  copyright.authors = 'Artur Rios | [MIT License](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)'
+  copyright.authors = 'Artur Rios | [Artur Rios Attribution License](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)'
   privacy_policy = ''
   github_repo = 'https://github.com/artur-rios/dotnet-messaging'
   github_branch = 'main'
