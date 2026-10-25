@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The package's project URL is the documentation site's new address, `https://docs.artur-rios.tech/dotnet-messaging`, since the
+  site moved from GitHub Pages.
+
 ## [1.4.0] - 2026-10-11
 
 ### Added
