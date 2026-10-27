@@ -1,4 +1,4 @@
-baseURL = 'https://artur-rios.github.io/dotnet-messaging/'
+baseURL = 'https://docs.artur-rios.tech/dotnet-messaging/'
 title = 'Dotnet Messaging'
 
 # Docsy is installed as the @docsy/theme NPM package (see package.json)

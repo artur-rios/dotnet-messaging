@@ -14,7 +14,7 @@
     <Nullable>enable</Nullable>
     <PackageId>ArturRios.Messaging</PackageId>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://artur-rios.github.io/dotnet-messaging</PackageProjectUrl>
+    <PackageProjectUrl>https://docs.artur-rios.tech/dotnet-messaging</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>utilities;messaging;email;mailgun;.net</PackageTags>
     <RepositoryUrl>https://github.com/artur-rios/dotnet-messaging</RepositoryUrl>
