@@ -13,15 +13,16 @@
     <IncludeSymbols>false</IncludeSymbols>
     <Nullable>enable</Nullable>
     <PackageId>ArturRios.Messaging</PackageId>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://artur-rios.github.io/dotnet-messaging</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://docs.artur-rios.tech/dotnet-messaging</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>utilities;messaging;email;mailgun;.net</PackageTags>
     <RepositoryUrl>https://github.com/artur-rios/dotnet-messaging</RepositoryUrl>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ArturRios.Output" Version="3.2.0" />
