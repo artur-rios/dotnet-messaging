@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-29
+
 ### Changed
 
 - The package's project URL is the documentation site's new address, `https://docs.artur-rios.tech/dotnet-messaging`, since the
@@ -82,7 +84,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   through the `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` environment variables and returning a `ProcessOutput` from
   `ArturRios.Output`.
 
-[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.0...HEAD
+[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.1...HEAD
+[1.4.1]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.2.0...1.3.0
 [1.2.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.1.0...v1.2.0
