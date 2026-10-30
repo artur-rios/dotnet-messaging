@@ -1,16 +1,8 @@
 # Dotnet Messaging
 
-> [!NOTE]
-> This is the real, open-source code of dotnet-messaging. Its home is Forgejo, at
-> https://git.techcraftsmen.net/artur-rios/dotnet-messaging; the copy on GitHub is a read-only mirror, for viewing only, and
-> its issues and pull requests are not followed. If you want to contribute, email me at
-> arturdev@duck.com.
-
 [![Docs](https://img.shields.io/badge/docs-website-blue)](https://docs.artur-rios.tech/dotnet-messaging)
 [![License: Attribution](https://img.shields.io/badge/License-Attribution-blue.svg)](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/ArturRios.Messaging.svg)](https://www.nuget.org/packages/ArturRios.Messaging)
-
-This repository lives at <https://git.techcraftsmen.net/artur-rios/dotnet-messaging>. The GitHub repository is a read-only mirror of it.
 
 Utilities for different messaging formats and protocols for .NET applications.
 Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.
@@ -188,6 +180,9 @@ Notable changes in each release are recorded in [CHANGELOG.md](https://github.co
 
 Building from source, running the tests, the branching model and the release process are described in
 [CONTRIBUTING.md](https://github.com/artur-rios/dotnet-messaging/blob/main/CONTRIBUTING.md).
+
+The GitHub repository is a read-only mirror for the real, open-source code of dotnet-messaging. Its home is Forgejo, at
+https://git.techcraftsmen.net/artur-rios/dotnet-messaging. If you want to contribute, e-mail me at arturdev@duck.com.
 
 ## Legal Details
 
