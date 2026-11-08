@@ -1,16 +1,8 @@
 # Dotnet Messaging
 
-> [!NOTE]
-> This is the real, open-source code of dotnet-messaging. Its home is Forgejo, at
-> https://git.techcraftsmen.net/artur-rios/dotnet-messaging; the copy on GitHub is a read-only mirror, for viewing only, and
-> its issues and pull requests are not followed. If you want to contribute, email me at
-> arturdev@duck.com.
-
 [![Docs](https://img.shields.io/badge/docs-website-blue)](https://docs.artur-rios.tech/dotnet-messaging)
 [![License: Attribution](https://img.shields.io/badge/License-Attribution-blue.svg)](https://github.com/artur-rios/dotnet-messaging/blob/main/LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/ArturRios.Messaging.svg)](https://www.nuget.org/packages/ArturRios.Messaging)
-
-This repository lives at <https://git.techcraftsmen.net/artur-rios/dotnet-messaging>. The GitHub repository is a read-only mirror of it.
 
 Utilities for different messaging formats and protocols for .NET applications.
 Right now, the library includes a Mailgun email service, but more features and protocols may be added in the future, as well as support for more email providers.
@@ -48,6 +40,7 @@ Install-Package ArturRios.Messaging
 - Designed for dependency injection — register services through the standard `IServiceCollection` pattern
 - Returns structured `ProcessOutput` results (from [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output)): missing configuration and messages Mailgun rejects are reported as errors rather than thrown. Transport failures from `HttpClient` (no network, a timeout) still throw
 - Cancellable — `SendEmailAsync` has an overload taking a `CancellationToken`, which aborts the HTTP request
+- Per-message sender and reply-to — send an `EmailMessage` to set either for one message
 
 ## Configuration
 
@@ -118,6 +111,19 @@ public class NotificationService(IEmailService emailService)
 }
 ```
 
+### A Sender or Reply-To per Message
+
+```csharp
+var output = await emailService.SendEmailAsync(new EmailMessage(recipient, "Welcome!", "Thanks for signing up.")
+{
+    From = "Example <no-reply@example.com>",
+    ReplyTo = "support@example.com"
+});
+```
+
+`From` wins over `MAILGUN_FROM`; leave it out to use the configured sender. `ReplyTo` is sent as the `Reply-To` header
+only. A value that is not exactly one address makes the call return a failed `ProcessOutput`, and nothing is sent.
+
 ### Cancellation
 
 Pass a `CancellationToken` — a request's `HttpContext.RequestAborted`, a worker's stopping token — to abort the
@@ -150,6 +156,15 @@ classDiagram
         <<interface>>
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
         +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
+        +SendEmailAsync(message: EmailMessage, cancellationToken: CancellationToken) Task~ProcessOutput~
+    }
+
+    class EmailMessage {
+        +string To
+        +string Subject
+        +string Body
+        +string? From
+        +string? ReplyTo
     }
 
     class MailgunEmailService {
@@ -164,6 +179,7 @@ classDiagram
         +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
         +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
+        +SendEmailAsync(message: EmailMessage, cancellationToken: CancellationToken) Task~ProcessOutput~
         -RecipientReference(address: string?) string$
         -GetApiVersion() string$
     }
@@ -188,6 +204,9 @@ Notable changes in each release are recorded in [CHANGELOG.md](https://github.co
 
 Building from source, running the tests, the branching model and the release process are described in
 [CONTRIBUTING.md](https://github.com/artur-rios/dotnet-messaging/blob/main/CONTRIBUTING.md).
+
+The GitHub repository is a read-only mirror for the real, open-source code of dotnet-messaging. Its home is Forgejo, at
+https://git.techcraftsmen.net/artur-rios/dotnet-messaging. If you want to contribute, e-mail me at arturdev@duck.com.
 
 ## Legal Details
 
