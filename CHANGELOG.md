@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-08
+
+### Added
+
+- `EmailMessage`, one e-mail with an optional sender (`From`) and reply-to (`ReplyTo`), and
+  `IEmailService.SendEmailAsync(EmailMessage, CancellationToken)` to send it. The sender of a message wins over
+  `MAILGUN_FROM`; a reply-to is sent as the `Reply-To` header only, never as a recipient. A sender or reply-to that is
+  not exactly one address makes the send return a failed `ProcessOutput`, which does not repeat the value, and nothing
+  is sent.
+- The new method has a default implementation, so existing `IEmailService` implementations keep compiling. It sends a
+  message that sets neither field through the existing overload, and returns a failed `ProcessOutput` for one that
+  sets either, rather than dropping them.
+
 ## [1.4.1] - 2026-10-29
 
 ### Changed
@@ -84,7 +97,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   through the `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` environment variables and returning a `ProcessOutput` from
   `ArturRios.Output`.
 
-[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.1...HEAD
+[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/artur-rios/dotnet-messaging/compare/v1.2.0...1.3.0

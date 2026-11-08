@@ -40,6 +40,7 @@ Install-Package ArturRios.Messaging
 - Designed for dependency injection — register services through the standard `IServiceCollection` pattern
 - Returns structured `ProcessOutput` results (from [ArturRios.Output](https://www.nuget.org/packages/ArturRios.Output)): missing configuration and messages Mailgun rejects are reported as errors rather than thrown. Transport failures from `HttpClient` (no network, a timeout) still throw
 - Cancellable — `SendEmailAsync` has an overload taking a `CancellationToken`, which aborts the HTTP request
+- Per-message sender and reply-to — send an `EmailMessage` to set either for one message
 
 ## Configuration
 
@@ -110,6 +111,19 @@ public class NotificationService(IEmailService emailService)
 }
 ```
 
+### A Sender or Reply-To per Message
+
+```csharp
+var output = await emailService.SendEmailAsync(new EmailMessage(recipient, "Welcome!", "Thanks for signing up.")
+{
+    From = "Example <no-reply@example.com>",
+    ReplyTo = "support@example.com"
+});
+```
+
+`From` wins over `MAILGUN_FROM`; leave it out to use the configured sender. `ReplyTo` is sent as the `Reply-To` header
+only. A value that is not exactly one address makes the call return a failed `ProcessOutput`, and nothing is sent.
+
 ### Cancellation
 
 Pass a `CancellationToken` — a request's `HttpContext.RequestAborted`, a worker's stopping token — to abort the
@@ -142,6 +156,15 @@ classDiagram
         <<interface>>
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
         +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
+        +SendEmailAsync(message: EmailMessage, cancellationToken: CancellationToken) Task~ProcessOutput~
+    }
+
+    class EmailMessage {
+        +string To
+        +string Subject
+        +string Body
+        +string? From
+        +string? ReplyTo
     }
 
     class MailgunEmailService {
@@ -156,6 +179,7 @@ classDiagram
         +MailgunEmailService(logger: ILogger~MailgunEmailService~, httpClient: HttpClient?)
         +SendEmailAsync(to: string, subject: string, body: string) Task~ProcessOutput~
         +SendEmailAsync(to: string, subject: string, body: string, cancellationToken: CancellationToken) Task~ProcessOutput~
+        +SendEmailAsync(message: EmailMessage, cancellationToken: CancellationToken) Task~ProcessOutput~
         -RecipientReference(address: string?) string$
         -GetApiVersion() string$
     }

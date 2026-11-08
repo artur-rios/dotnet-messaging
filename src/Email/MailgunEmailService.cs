@@ -19,6 +19,7 @@ public class MailgunEmailService : IEmailService
 {
     private const string MailgunApiBaseUrl = "https://api.mailgun.net";
     private const string MailgunMessagesEndpoint = "messages";
+    private const string ReplyToField = "h:Reply-To";
 
     /// <summary>
     /// The client used when the caller supplies none. One per process rather than one per service
@@ -122,12 +123,36 @@ public class MailgunEmailService : IEmailService
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
     /// <exception cref="HttpRequestException">Mailgun could not be reached (DNS, connection or TLS failure).</exception>
     /// <exception cref="TaskCanceledException">The request exceeded the <see cref="HttpClient.Timeout"/>.</exception>
-    public async Task<ProcessOutput> SendEmailAsync(
+    public Task<ProcessOutput> SendEmailAsync(
         string to,
         string subject,
         string body,
         CancellationToken cancellationToken)
+        => SendEmailAsync(new EmailMessage(to, subject, body), cancellationToken);
+
+    /// <summary>
+    /// Sends a plain text e-mail through the Mailgun API, with the sender and reply-to <paramref name="message"/>
+    /// carries.
+    /// </summary>
+    /// <param name="message">The e-mail to send.</param>
+    /// <param name="cancellationToken">Cancels the send, and the HTTP request it makes.</param>
+    /// <returns>
+    /// A <see cref="ProcessOutput"/> without errors when Mailgun accepts the message, or carrying the status code and
+    /// response body when it does not. Missing configuration, or a sender or reply-to that is not exactly one
+    /// address, is reported the same way rather than sent to Mailgun.
+    /// </returns>
+    /// <remarks>
+    /// A message without a sender uses <see cref="FromVariable"/>, or <c>postmaster@</c> the domain. Failed output
+    /// never repeats the rejected value, so an address cannot reach the log through it.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="message"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was canceled.</exception>
+    /// <exception cref="HttpRequestException">Mailgun could not be reached (DNS, connection or TLS failure).</exception>
+    /// <exception cref="TaskCanceledException">The request exceeded the <see cref="HttpClient.Timeout"/>.</exception>
+    public async Task<ProcessOutput> SendEmailAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         var output = new ProcessOutput();
@@ -145,13 +170,22 @@ public class MailgunEmailService : IEmailService
             output.AddError($"Cannot send e-mail via Mailgun: the {DomainVariable} environment variable is not set.");
         }
 
-        var from = GetSender(domain);
+        var from = message.From is null ? GetSender(domain) : SingleMailboxOrNull(message.From);
 
         if (from is null)
         {
-            output.AddError(
-                $"Cannot send e-mail via Mailgun: the {FromVariable} environment variable is not a single e-mail " +
-                "address, optionally with a display name (\"Example <no-reply@example.com>\").");
+            output.AddError(message.From is null
+                ? $"Cannot send e-mail via Mailgun: the {FromVariable} environment variable is not a single e-mail " +
+                  "address, optionally with a display name (\"Example <no-reply@example.com>\")."
+                : "Cannot send e-mail via Mailgun: the message's sender is not a single e-mail address, optionally " +
+                  "with a display name (\"Example <no-reply@example.com>\").");
+        }
+
+        var replyTo = message.ReplyTo is null ? null : SingleMailboxOrNull(message.ReplyTo);
+
+        if (message.ReplyTo is not null && replyTo is null)
+        {
+            output.AddError("Cannot send e-mail via Mailgun: the message's reply-to is not a single e-mail address.");
         }
 
         if (!output.Success)
@@ -173,15 +207,10 @@ public class MailgunEmailService : IEmailService
                     "Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{apiKey}")))
             },
-            Content = new FormUrlEncodedContent([
-                new KeyValuePair<string, string>("from", from!),
-                new KeyValuePair<string, string>("to", to),
-                new KeyValuePair<string, string>("subject", subject),
-                new KeyValuePair<string, string>("text", body)
-            ])
+            Content = new FormUrlEncodedContent(FormFields(message, from!, replyTo))
         };
 
-        var recipientRef = RecipientReference(to);
+        var recipientRef = RecipientReference(message.To);
 
         _logger.LogInformation("Sending e-mail to {RecipientRef} via Mailgun...", recipientRef);
 
@@ -203,6 +232,38 @@ public class MailgunEmailService : IEmailService
             $"Failed to send e-mail via Mailgun. Status Code: {response.StatusCode} | Response: {responseContent}");
 
         return output;
+    }
+
+    /// <summary>
+    /// The form fields of a Mailgun send. The reply-to goes in Mailgun's custom header field, so it is only ever a
+    /// header of the message and never a recipient.
+    /// </summary>
+    private static List<KeyValuePair<string, string>> FormFields(EmailMessage message, string from, string? replyTo)
+    {
+        List<KeyValuePair<string, string>> fields =
+        [
+            new("from", from),
+            new("to", message.To),
+            new("subject", message.Subject),
+            new("text", message.Body)
+        ];
+
+        if (replyTo is not null)
+        {
+            fields.Add(new KeyValuePair<string, string>(ReplyToField, replyTo));
+        }
+
+        return fields;
+    }
+
+    /// <summary>
+    /// The trimmed <paramref name="value"/> when it is exactly one mailbox, otherwise <see langword="null"/>.
+    /// </summary>
+    private static string? SingleMailboxOrNull(string value)
+    {
+        var trimmed = value.Trim();
+
+        return IsSingleMailbox(trimmed) ? trimmed : null;
     }
 
     /// <summary>
