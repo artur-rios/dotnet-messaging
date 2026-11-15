@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-14
+
+### Changed
+
+- `ArturRios.Output` updated from 3.2.0 to 3.3.1.
+
 ## [1.5.0] - 2026-11-08
 
 ### Added
@@ -97,7 +103,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   through the `MAILGUN_API_KEY` and `MAILGUN_DOMAIN` environment variables and returning a `ProcessOutput` from
   `ArturRios.Output`.
 
-[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.5.0...HEAD
+[Unreleased]: https://github.com/artur-rios/dotnet-messaging/compare/1.5.1...HEAD
+[1.5.1]: https://github.com/artur-rios/dotnet-messaging/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/artur-rios/dotnet-messaging/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/artur-rios/dotnet-messaging/compare/1.3.0...1.4.0
