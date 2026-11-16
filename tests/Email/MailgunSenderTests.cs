@@ -98,6 +98,22 @@ public class MailgunSenderTests : IDisposable
         Assert.Equal(from, SentFrom());
     }
 
+    [Theory]
+    [InlineData("<no-reply@acme.com>", "no-reply@acme.com")]
+    [InlineData("  <no-reply@acme.com>  ", "no-reply@acme.com")]
+    [InlineData("<NO-REPLY@ACME.COM>", "NO-REPLY@ACME.COM")]
+    public async Task GivenAConfiguredSenderInAngleBracketsWithoutADisplayName_WhenSendingAnEmail_ThenTheBareAddressIsSent(
+        string from, string expected)
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);
+
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
+
+        Assert.True(output.Success);
+        Assert.Equal(expected, SentFrom());
+    }
+
     [Fact]
     public async Task GivenAConfiguredSenderWithSurroundingWhitespace_WhenSendingAnEmail_ThenItIsTrimmed()
     {
@@ -118,7 +134,13 @@ public class MailgunSenderTests : IDisposable
     [InlineData("no-reply@acme.com\r\nBcc: victim@example.com")]
     [InlineData("Acme, Inc. <no-reply@acme.com>")]
     [InlineData("support@acme <no-reply@acme.com>")]
-    [InlineData("<no-reply@acme.com>")]
+    [InlineData("<>")]
+    [InlineData("< >")]
+    [InlineData("Acme <>")]
+    [InlineData("<no-reply@acme.com> <other@acme.com>")]
+    [InlineData("<no-reply@acme.com>; <other@acme.com>")]
+    [InlineData("<no-reply@acme.com")]
+    [InlineData("no-reply@acme.com>")]
     public async Task GivenAnInvalidSender_WhenSendingAnEmail_ThenTheEnvelopeSaysSoAndNothingIsSent(string from)
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);

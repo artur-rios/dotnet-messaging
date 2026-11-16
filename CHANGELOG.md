@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- A sender or reply-to written as an address in angle brackets with no display name (`<no-reply@example.com>`), which
+  RFC 5322 allows, is accepted in `MAILGUN_FROM`, `EmailMessage.From` and `EmailMessage.ReplyTo` instead of failing the
+  send. It is sent to Mailgun as the bare address (`no-reply@example.com`). Every other value that is not exactly one
+  address is still refused.
+
 ## [1.5.1] - 2026-11-14
 
 ### Changed

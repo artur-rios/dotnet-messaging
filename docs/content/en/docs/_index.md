@@ -53,7 +53,7 @@ Set the following environment variables before calling `SendEmailAsync`:
 |---|---|---|---|
 | `MAILGUN_API_KEY` | Yes | — | Your Mailgun private API key |
 | `MAILGUN_DOMAIN` | Yes | — | Your verified Mailgun sending domain |
-| `MAILGUN_FROM` | No | `postmaster@{MAILGUN_DOMAIN}` | The sender of every message: an address (`no-reply@example.com`) or a display name and an address (`Example <no-reply@example.com>`). When unset or blank, the domain's postmaster is used, with no display name |
+| `MAILGUN_FROM` | No | `postmaster@{MAILGUN_DOMAIN}` | The sender of every message: an address (`no-reply@example.com`), an address in angle brackets (`<no-reply@example.com>`, sent as the bare address) or a display name and an address (`Example <no-reply@example.com>`). When unset or blank, the domain's postmaster is used, with no display name |
 | `MAILGUN_API_VERSION` | No | `v3` | Mailgun API version used to build the request URL. When unset or blank, `v3` is used |
 
 Requests are sent to `https://api.mailgun.net/{MAILGUN_API_VERSION}/{MAILGUN_DOMAIN}/messages`, as plain text
@@ -63,7 +63,7 @@ on `MAILGUN_DOMAIN` (or another domain verified in Mailgun) for Mailgun to accep
 Environment variables are read on every `SendEmailAsync` call, so changes take effect without recreating the service.
 
 If `MAILGUN_API_KEY` or `MAILGUN_DOMAIN` is unset or blank, or `MAILGUN_FROM` is set but is not exactly one
-address (with or without a display name), `SendEmailAsync` returns a failed `ProcessOutput` naming the
+address (bare, in angle brackets, or with a display name), `SendEmailAsync` returns a failed `ProcessOutput` naming the
 variable and sends nothing — rather than issuing an unauthenticated
 request against an empty domain and reporting whatever Mailgun makes of it.
 
