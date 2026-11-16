@@ -1,9 +1,4 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using ArturRios.Messaging.Email;
+﻿using ArturRios.Messaging.Email;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArturRios.Messaging.Tests.Email;
@@ -16,7 +11,8 @@ namespace ArturRios.Messaging.Tests.Email;
 [Collection(MailgunEnvironmentCollection.Name)]
 public class MailgunConfigurationTests : IDisposable
 {
-    private readonly RecordingHandler _handler = new();
+    private readonly MailgunEnvironment _environment = new();
+    private readonly MockHttpMessageHandler _handler = new();
     private readonly HttpClient _httpClient;
     private readonly MailgunEmailService _service;
 
@@ -24,18 +20,11 @@ public class MailgunConfigurationTests : IDisposable
     {
         _httpClient = new HttpClient(_handler);
         _service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance, _httpClient);
-
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
-
+        _environment.Dispose();
         _httpClient.Dispose();
         _handler.Dispose();
 
@@ -47,11 +36,12 @@ public class MailgunConfigurationTests : IDisposable
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.mailgun.org");
 
-        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World");
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
         Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.ApiKeyVariable));
-        Assert.Equal(0, _handler.RequestCount);
+        Assert.Empty(_handler.Requests);
     }
 
     [Fact]
@@ -59,21 +49,23 @@ public class MailgunConfigurationTests : IDisposable
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
 
-        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World");
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
         Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.DomainVariable));
-        Assert.Equal(0, _handler.RequestCount);
+        Assert.Empty(_handler.Requests);
     }
 
     [Fact]
     public async Task GivenNeitherApiKeyNorDomain_WhenSendingAnEmail_ThenBothAreReported()
     {
-        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World");
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
         Assert.Equal(2, output.Errors.Count);
-        Assert.Equal(0, _handler.RequestCount);
+        Assert.Empty(_handler.Requests);
     }
 
     [Theory]
@@ -84,10 +76,11 @@ public class MailgunConfigurationTests : IDisposable
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, apiKey);
         Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.mailgun.org");
 
-        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World");
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
-        Assert.Equal(0, _handler.RequestCount);
+        Assert.Empty(_handler.Requests);
     }
 
     [Fact]
@@ -102,37 +95,54 @@ public class MailgunConfigurationTests : IDisposable
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
         Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.mailgun.org");
 
-        await _service.SendEmailAsync("to@example.com", "Hello", "World");
-        await _service.SendEmailAsync("to@example.com", "Hello", "World");
+        await _service.SendEmailAsync("to@example.com", "Hello", "World", TestContext.Current.CancellationToken);
+        await _service.SendEmailAsync("to@example.com", "Hello", "World", TestContext.Current.CancellationToken);
 
         Assert.Null(_httpClient.DefaultRequestHeaders.Authorization);
-        Assert.Equal(2, _handler.RequestCount);
-        Assert.All(_handler.AuthorizationHeaders, header => Assert.Equal("Basic", header));
+        Assert.Equal(2, _handler.Requests.Count);
+        Assert.All(_handler.Requests, request => Assert.Equal("Basic", request.AuthorizationScheme));
+    }
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GivenABlankDomain_WhenSendingAnEmail_ThenItIsTreatedAsMissing(string domain)
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
+        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, domain);
+
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
+
+        Assert.False(output.Success);
+        Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.DomainVariable));
+        Assert.Empty(_handler.Requests);
     }
 
-    private sealed class RecordingHandler : HttpMessageHandler
+    [Fact]
+    public async Task GivenNoApiKeyAndAnInvalidSender_WhenSendingAnEmail_ThenBothAreReported()
     {
-        private readonly List<string> _authorizationHeaders = [];
+        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.mailgun.org");
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, "not-an-address");
 
-        public int RequestCount { get; private set; }
+        var output = await _service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
-        public IReadOnlyList<string> AuthorizationHeaders => _authorizationHeaders;
+        Assert.Equal(2, output.Errors.Count);
+        Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.ApiKeyVariable));
+        Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.FromVariable));
+        Assert.Empty(_handler.Requests);
+    }
 
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            RequestCount++;
+    [Fact]
+    public async Task GivenNoHttpClient_WhenConstructed_ThenTheServiceWorksOnTheSharedClient()
+    {
+        // Nothing is configured, so the shared client is never asked to reach Mailgun.
+        var service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance);
 
-            if (request.Headers.Authorization?.Scheme is { } scheme)
-            {
-                _authorizationHeaders.Add(scheme);
-            }
+        var output = await service.SendEmailAsync("to@example.com", "Hello", "World",
+            TestContext.Current.CancellationToken);
 
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{}", Encoding.UTF8, "application/json")
-            });
-        }
+        Assert.False(output.Success);
+        Assert.Equal(2, output.Errors.Count);
     }
 }

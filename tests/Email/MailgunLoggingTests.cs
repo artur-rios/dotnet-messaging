@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,25 +18,23 @@ public class MailgunLoggingTests : IDisposable
 {
     private const string Recipient = "Jane.Doe@Example.com";
 
+    private readonly MailgunEnvironment _environment = new(apiKey: "key", domain: "mg.example.com");
     private readonly RecordingLogger _logger = new();
-    private readonly StubHandler _handler = new();
+    private readonly MockHttpMessageHandler _handler = new();
     private readonly HttpClient _httpClient;
     private readonly MailgunEmailService _service;
 
     public MailgunLoggingTests()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "mg.example.com");
-
         _httpClient = new HttpClient(_handler);
         _service = new MailgunEmailService(_logger, _httpClient);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
+        _environment.Dispose();
         _httpClient.Dispose();
+        _handler.Dispose();
     }
 
     private static string ExpectedReference()
@@ -50,9 +49,9 @@ public class MailgunLoggingTests : IDisposable
     [InlineData(HttpStatusCode.BadRequest)]
     public async Task GivenASend_WhenItIsLogged_ThenTheAddressIsNeverWritten(HttpStatusCode status)
     {
-        _handler.Status = status;
+        _handler.SetResponse(status, "{\"message\": \"done\"}");
 
-        await _service.SendEmailAsync(Recipient, "s", "b");
+        await _service.SendEmailAsync(Recipient, "s", "b", TestContext.Current.CancellationToken);
 
         Assert.NotEmpty(_logger.Entries);
 
@@ -69,12 +68,66 @@ public class MailgunLoggingTests : IDisposable
     [InlineData(HttpStatusCode.BadRequest)]
     public async Task GivenASend_WhenItIsLogged_ThenEveryLineCarriesTheSameReference(HttpStatusCode status)
     {
-        _handler.Status = status;
+        _handler.SetResponse(status, "{\"message\": \"done\"}");
 
-        await _service.SendEmailAsync(Recipient, "s", "b");
+        await _service.SendEmailAsync(Recipient, "s", "b", TestContext.Current.CancellationToken);
 
         Assert.Equal(2, _logger.Entries.Count);
         Assert.All(_logger.Entries, entry => Assert.Contains(ExpectedReference(), entry.Message));
+    }
+
+    [Fact]
+    public async Task GivenMissingConfiguration_WhenSending_ThenOneErrorNamesItWithoutTheAddress()
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
+
+        await _service.SendEmailAsync(Recipient, "s", "b", TestContext.Current.CancellationToken);
+
+        var (message, values) = Assert.Single(_logger.Entries);
+        Assert.Contains(MailgunEmailService.ApiKeyVariable, message);
+        Assert.DoesNotContain(Recipient, message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(values, value =>
+            value?.ToString()?.Contains(Recipient, StringComparison.OrdinalIgnoreCase) == true);
+        Assert.Empty(_handler.Requests);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GivenABlankRecipient_WhenItIsLogged_ThenTheReferenceSaysThereIsNone(string recipient)
+    {
+        await _service.SendEmailAsync(recipient, "s", "b", TestContext.Current.CancellationToken);
+
+        Assert.All(_logger.Entries, entry => Assert.Contains("(none)", entry.Message));
+    }
+
+    [Fact]
+    public async Task GivenTheSameAddressSpelledTwoWays_WhenEachIsLogged_ThenBothCarryTheSameReference()
+    {
+        await _service.SendEmailAsync("  JANE.DOE@example.COM ", "s", "b", TestContext.Current.CancellationToken);
+
+        Assert.All(_logger.Entries, entry => Assert.Contains(ExpectedReference(), entry.Message));
+    }
+
+    [Fact]
+    public async Task GivenACultureWithItsOwnCasing_WhenTheRecipientIsLogged_ThenTheReferenceIsTheInvariantOne()
+    {
+        // Turkish lower-cases I to a dotless i, so a culture-sensitive reference would change with the machine.
+        const string recipient = "INFO@EXAMPLE.COM";
+        var expected = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes("info@example.com")))[..12];
+        var previous = CultureInfo.CurrentCulture;
+
+        CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+        try
+        {
+            await _service.SendEmailAsync(recipient, "s", "b", TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+        }
+
+        Assert.All(_logger.Entries, entry => Assert.Contains(expected, entry.Message));
     }
 
     private sealed class RecordingLogger : ILogger<MailgunEmailService>
@@ -94,17 +147,5 @@ public class MailgunLoggingTests : IDisposable
 
             Entries.Enqueue((formatter(state, exception), values));
         }
-    }
-
-    private sealed class StubHandler : HttpMessageHandler
-    {
-        public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken) =>
-            Task.FromResult(new HttpResponseMessage(Status)
-            {
-                Content = new StringContent("{\"message\": \"done\"}", Encoding.UTF8, "application/json")
-            });
     }
 }

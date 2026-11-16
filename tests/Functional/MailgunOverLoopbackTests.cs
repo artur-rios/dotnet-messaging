@@ -19,14 +19,16 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     private readonly HttpListener _listener = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly List<RecordedRequest> _received = [];
+    private readonly List<HttpClient> _clients = [];
 
     private Task _serverLoop = Task.CompletedTask;
+    private MailgunEnvironment _environment = null!;
     private ServiceProvider _provider = null!;
     private string _baseAddress = string.Empty;
 
     private (HttpStatusCode Status, string Body) _response = (HttpStatusCode.OK, """{"message":"Queued."}""");
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         var port = FreeTcpPort();
 
@@ -43,19 +45,19 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
 
         _provider = services.BuildServiceProvider();
 
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "test-key");
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "sandbox.example.org");
-        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
+        _environment = new MailgunEnvironment(apiKey: "test-key", domain: "sandbox.example.org");
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
+        _environment.Dispose();
+
+        foreach (var client in _clients)
+        {
+            client.Dispose();
+        }
 
         await _shutdown.CancelAsync();
 
@@ -79,10 +81,14 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     /// pointed at the listener. This mirrors what <c>AddHttpClient</c> hands the service, with the base
     /// address swapped and a handler that rewrites the host.
     /// </summary>
-    private IEmailService Service() =>
-        new MailgunEmailService(
-            NullLogger<MailgunEmailService>.Instance,
-            new HttpClient(new RedirectToLoopbackHandler(new Uri(_baseAddress))));
+    private IEmailService Service()
+    {
+        var client = new HttpClient(new RedirectToLoopbackHandler(new Uri(_baseAddress)));
+
+        _clients.Add(client);
+
+        return new MailgunEmailService(NullLogger<MailgunEmailService>.Instance, client);
+    }
 
     [Fact]
     public void GivenTheDocumentedRegistration_WhenTheServiceIsResolved_ThenItComesOutOfTheContainer()
@@ -97,7 +103,8 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     {
         _response = (HttpStatusCode.OK, """{"id":"<20260824.1@example.org>","message":"Queued. Thank you."}""");
 
-        var output = await Service().SendEmailAsync("to@example.com", "Welcome!", "Thanks for signing up.");
+        var output = await Service().SendEmailAsync("to@example.com", "Welcome!", "Thanks for signing up.",
+            TestContext.Current.CancellationToken);
 
         Assert.True(output.Success);
         Assert.Empty(output.Errors);
@@ -106,7 +113,8 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     [Fact]
     public async Task GivenAServerThatAccepts_WhenSendingAnEmail_ThenTheRequestCarriesTheDocumentedShape()
     {
-        await Service().SendEmailAsync("to@example.com", "Welcome!", "Thanks for signing up.");
+        await Service().SendEmailAsync("to@example.com", "Welcome!", "Thanks for signing up.",
+            TestContext.Current.CancellationToken);
 
         var request = Assert.Single(_received);
 
@@ -129,7 +137,7 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, "Acme <no-reply@acme.example>");
 
-        await Service().SendEmailAsync("to@example.com", "Welcome!", "Body");
+        await Service().SendEmailAsync("to@example.com", "Welcome!", "Body", TestContext.Current.CancellationToken);
 
         var decoded = WebUtility.UrlDecode(Assert.Single(_received).Body);
 
@@ -142,7 +150,7 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, "v4");
 
-        await Service().SendEmailAsync("to@example.com", "Welcome!", "Body");
+        await Service().SendEmailAsync("to@example.com", "Welcome!", "Body", TestContext.Current.CancellationToken);
 
         Assert.Equal("/v4/sandbox.example.org/messages", Assert.Single(_received).Path);
     }
@@ -152,7 +160,8 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     {
         _response = (HttpStatusCode.Unauthorized, """{"message":"Forbidden"}""");
 
-        var output = await Service().SendEmailAsync("to@example.com", "Welcome!", "Body");
+        var output = await Service().SendEmailAsync("to@example.com", "Welcome!", "Body",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
 
@@ -167,8 +176,8 @@ public sealed class MailgunOverLoopbackTests : IAsyncLifetime
     {
         var service = Service();
 
-        await service.SendEmailAsync("first@example.com", "One", "Body");
-        await service.SendEmailAsync("second@example.com", "Two", "Body");
+        await service.SendEmailAsync("first@example.com", "One", "Body", TestContext.Current.CancellationToken);
+        await service.SendEmailAsync("second@example.com", "Two", "Body", TestContext.Current.CancellationToken);
 
         Assert.Equal(2, _received.Count);
         Assert.All(_received, request => Assert.Equal("api:test-key", DecodeBasic(request.Authorization)));

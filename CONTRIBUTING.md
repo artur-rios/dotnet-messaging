@@ -26,7 +26,7 @@ dotnet build src/ArturRios.Messaging.sln
 
 ## Testing
 
-The test suite is xUnit, and every test is named with the Given / When / Then pattern. Every test class
+The test suite is xUnit v3, and every test is named with the Given / When / Then pattern. Every test class
 carries a `Category` trait, so the two kinds can be run — and reported — separately:
 
 ```bash
@@ -36,14 +36,19 @@ dotnet test src/ArturRios.Messaging.sln --filter "Category=Functional"
 
 Unit tests exercise the code in isolation against test doubles.
 Functional tests send through a real HTTP server on the loopback interface and inspect the request that arrives.
-The `test` check runs the two one after the other, and both must pass before a pull request can be merged. It is `ci/test.sh`, which you can run on your machine
-as well.
 
-The check also fails when a test has no `Category` trait, since no run would include it, and when
-`dotnet format --verify-no-changes` finds a file to reformat; run `dotnet format src/ArturRios.Messaging.sln` before pushing.
+CI runs the suite once, in the `coverage` check (`ci/coverage.sh`): every test of both kinds, with coverage collected,
+and the HTML report that the docs site serves at `/coverage-report/`. Every test must pass, and none may skip, before
+a pull request can be merged. You can run it on your machine as well.
 
-The `coverage` check (`ci/coverage.sh`) runs the tests with coverage collected and makes the HTML report that the docs site
-serves at `/coverage-report/`.
+The `test` check (`ci/test.sh`) runs no test: it fails when `dotnet format --verify-no-changes` finds a file to
+reformat (run `dotnet format src/ArturRios.Messaging.sln` before pushing), when the solution does not build, and when a
+test has no `Category` trait, since none of the runs above would include it. Running the suite there too would only
+run it twice: each check runs in a container of its own, at the same time as the other, and cannot read its result.
+
+The tests that configure Mailgun set its `MAILGUN_*` environment variables through `MailgunEnvironment`, which clears
+the ones a test does not set and restores them all afterwards, so a `MAILGUN_*` variable in your shell does not change
+the results.
 
 ## Branching and pull requests
 
