@@ -9,14 +9,16 @@ namespace ArturRios.Messaging.Email;
 public sealed record EmailMessage(string To, string Subject, string Body)
 {
     /// <summary>
-    /// The sender of this message: an address, or a display name and an address
-    /// (<c>Example &lt;no-reply@example.com&gt;</c>). When <see langword="null"/>, the service's own default sender is
-    /// used.
+    /// The sender of this message: an address (<c>no-reply@example.com</c>), an address in angle brackets
+    /// (<c>&lt;no-reply@example.com&gt;</c>, which <see cref="MailgunEmailService"/> sends as the bare address), or a
+    /// display name and an address (<c>Example &lt;no-reply@example.com&gt;</c>). When <see langword="null"/>, the
+    /// service's own default sender is used.
     /// </summary>
     public string? From { get; init; }
 
     /// <summary>
-    /// The address replies to this message should go to. When <see langword="null"/>, the message has no reply-to.
+    /// The address replies to this message should go to, in the same forms as <see cref="From"/>. When
+    /// <see langword="null"/>, the message has no reply-to.
     /// </summary>
     public string? ReplyTo { get; init; }
 }

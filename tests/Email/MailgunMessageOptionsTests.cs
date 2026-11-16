@@ -84,6 +84,26 @@ public class MailgunMessageOptionsTests : IDisposable
     }
 
     [Fact]
+    public async Task GivenAMessageWithASenderInAngleBracketsWithoutADisplayName_WhenSent_ThenFromIsTheBareAddress()
+    {
+        var output = await _service.SendEmailAsync(Message() with { From = " <client@mg.example.com> " },
+            TestContext.Current.CancellationToken);
+
+        Assert.True(output.Success);
+        Assert.Equal("client@mg.example.com", SentField("from"));
+    }
+
+    [Fact]
+    public async Task GivenAMessageWithAReplyToInAngleBracketsWithoutADisplayName_WhenSent_ThenTheReplyToIsTheBareAddress()
+    {
+        var output = await _service.SendEmailAsync(Message() with { ReplyTo = "<visitor@example.com>" },
+            TestContext.Current.CancellationToken);
+
+        Assert.True(output.Success);
+        Assert.Equal("visitor@example.com", SentField("h:Reply-To"));
+    }
+
+    [Fact]
     public async Task GivenAMessageWithAReplyTo_WhenSent_ThenTheRecipientIsUnchanged()
     {
         await _service.SendEmailAsync(Message() with { ReplyTo = "visitor@example.com" },
@@ -106,6 +126,11 @@ public class MailgunMessageOptionsTests : IDisposable
     [InlineData("not-an-address")]
     [InlineData("a@example.com, b@example.com")]
     [InlineData("a@example.com\r\nBcc: c@example.com")]
+    [InlineData("Acme, Inc. <a@example.com>")]
+    [InlineData("support@acme <a@example.com>")]
+    [InlineData("<>")]
+    [InlineData("< >")]
+    [InlineData("<a@example.com> <b@example.com>")]
     public async Task GivenAnInvalidSender_WhenSent_ThenFailsAndSendsNothing(string sender)
     {
         var output = await _service.SendEmailAsync(Message() with { From = sender },
@@ -122,6 +147,11 @@ public class MailgunMessageOptionsTests : IDisposable
     [InlineData("not-an-address")]
     [InlineData("a@example.com, b@example.com")]
     [InlineData("a@example.com\r\nBcc: c@example.com")]
+    [InlineData("Acme, Inc. <a@example.com>")]
+    [InlineData("support@acme <a@example.com>")]
+    [InlineData("<>")]
+    [InlineData("< >")]
+    [InlineData("<a@example.com> <b@example.com>")]
     public async Task GivenAnInvalidReplyTo_WhenSent_ThenFailsAndSendsNothing(string replyTo)
     {
         var output = await _service.SendEmailAsync(Message() with { ReplyTo = replyTo },
