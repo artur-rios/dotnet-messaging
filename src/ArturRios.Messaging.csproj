@@ -25,6 +25,6 @@
     <None Include="..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ArturRios.Output" Version="3.3.2" />
+    <PackageReference Include="ArturRios.Output" Version="3.3.3" />
   </ItemGroup>
 </Project>
