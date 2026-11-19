@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `ArturRios.Output` updated from 3.3.1 to 3.3.2.
+
 ### Fixed
 
 - A sender or reply-to written as an address in angle brackets with no display name (`<no-reply@example.com>`), which
