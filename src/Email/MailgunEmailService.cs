@@ -48,7 +48,8 @@ public class MailgunEmailService : IEmailService
 
     /// <summary>
     /// Name of the environment variable holding the sender (<c>from</c>) of every message: an address
-    /// (<c>no-reply@example.com</c>) or a display name and an address (<c>Example &lt;no-reply@example.com&gt;</c>).
+    /// (<c>no-reply@example.com</c>), an address in angle brackets (<c>&lt;no-reply@example.com&gt;</c>, sent as the
+    /// bare address) or a display name and an address (<c>Example &lt;no-reply@example.com&gt;</c>).
     /// When it is not set or is blank, messages are sent as <c>postmaster@</c> the <see cref="DomainVariable"/>
     /// domain, with no display name.
     /// </summary>
@@ -257,13 +258,20 @@ public class MailgunEmailService : IEmailService
     }
 
     /// <summary>
-    /// The trimmed <paramref name="value"/> when it is exactly one mailbox, otherwise <see langword="null"/>.
+    /// The trimmed <paramref name="value"/> when it is exactly one mailbox, otherwise <see langword="null"/>. An
+    /// address in angle brackets with no display name (<c>&lt;no-reply@example.com&gt;</c>) comes back as the bare
+    /// address, which means the same.
     /// </summary>
     private static string? SingleMailboxOrNull(string value)
     {
         var trimmed = value.Trim();
 
-        return IsSingleMailbox(trimmed) ? trimmed : null;
+        return SingleMailbox(trimmed) switch
+        {
+            MailboxForm.Bracketed => trimmed[1..^1],
+            MailboxForm.None => null,
+            _ => trimmed
+        };
     }
 
     /// <summary>
@@ -292,7 +300,8 @@ public class MailgunEmailService : IEmailService
     /// </summary>
     /// <param name="domain">The sending domain, for the default sender.</param>
     /// <returns>
-    /// The trimmed configured sender when it is one valid address, with or without a display name;
+    /// The trimmed configured sender when it is one valid address, with or without a display name (an address in
+    /// angle brackets with no display name comes back bare);
     /// <c>postmaster@<paramref name="domain"/></c> when it is unset or blank; <see langword="null"/> when it is set
     /// but invalid.
     /// </returns>
@@ -305,46 +314,70 @@ public class MailgunEmailService : IEmailService
             return $"postmaster@{domain}";
         }
 
-        return IsSingleMailbox(from) ? from : null;
+        return SingleMailboxOrNull(from);
     }
 
     /// <summary>
-    /// Whether <paramref name="value"/> is exactly one mailbox: a bare address, or a display name followed by an
-    /// address in angle brackets. Line breaks are refused by <see cref="MailAddress"/> itself, so a header cannot be
-    /// smuggled into the value.
+    /// The forms <see cref="SingleMailbox"/> tells apart.
+    /// </summary>
+    private enum MailboxForm
+    {
+        /// <summary>Not exactly one mailbox.</summary>
+        None,
+
+        /// <summary>A bare address: <c>no-reply@example.com</c>.</summary>
+        Bare,
+
+        /// <summary>An address in angle brackets with no display name: <c>&lt;no-reply@example.com&gt;</c>.</summary>
+        Bracketed,
+
+        /// <summary>A display name and an address in angle brackets: <c>Example &lt;no-reply@example.com&gt;</c>.</summary>
+        Named
+    }
+
+    /// <summary>
+    /// Which form of exactly one mailbox <paramref name="value"/> is: a bare address, an address in angle brackets
+    /// with no display name (RFC 5322's <c>angle-addr</c>), or a display name followed by an address in angle
+    /// brackets; <see cref="MailboxForm.None"/> when it is none of them. Line breaks are refused by
+    /// <see cref="MailAddress"/> itself, so a header cannot be smuggled into the value.
     /// </summary>
     /// <remarks>
     /// <see cref="MailAddress"/> alone is not enough: it reads <c>a@x.com, b@x.com</c> as the address
     /// <c>b@x.com</c> with the display name <c>a@x.com,</c>. So the parsed address must account for the whole value,
     /// and an unquoted display name must not carry what would make it a list or another address.
     /// </remarks>
-    private static bool IsSingleMailbox(string value)
+    private static MailboxForm SingleMailbox(string value)
     {
         if (!MailAddress.TryCreate(value, out var mailbox))
         {
-            return false;
+            return MailboxForm.None;
         }
 
         if (string.Equals(value, mailbox.Address, StringComparison.OrdinalIgnoreCase))
         {
-            return true;
+            return MailboxForm.Bare;
         }
 
         var bracketed = $"<{mailbox.Address}>";
 
         if (!value.EndsWith(bracketed, StringComparison.OrdinalIgnoreCase))
         {
-            return false;
+            return MailboxForm.None;
         }
 
         var displayName = value[..^bracketed.Length].TrimEnd();
 
-        if (displayName.Length >= 2 && displayName[0] == '"' && displayName[^1] == '"')
+        if (displayName.Length == 0)
         {
-            return true;
+            return MailboxForm.Bracketed;
         }
 
-        return displayName.Length > 0 && displayName.IndexOfAny([',', ';', '@', '<', '>', '"']) < 0;
+        if (displayName.Length >= 2 && displayName[0] == '"' && displayName[^1] == '"')
+        {
+            return MailboxForm.Named;
+        }
+
+        return displayName.IndexOfAny([',', ';', '@', '<', '>', '"']) < 0 ? MailboxForm.Named : MailboxForm.None;
     }
 
     /// <summary>

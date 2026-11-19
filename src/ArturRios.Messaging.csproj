@@ -18,13 +18,13 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>utilities;messaging;email;mailgun;.net</PackageTags>
     <RepositoryUrl>https://github.com/artur-rios/dotnet-messaging</RepositoryUrl>
-    <Version>1.5.1</Version>
+    <Version>1.5.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="" />
     <None Include="..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ArturRios.Output" Version="3.3.1" />
+    <PackageReference Include="ArturRios.Output" Version="3.3.2" />
   </ItemGroup>
 </Project>

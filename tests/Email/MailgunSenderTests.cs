@@ -1,6 +1,4 @@
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using ArturRios.Messaging.Email;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -16,27 +14,20 @@ public class MailgunSenderTests : IDisposable
 {
     private const string Domain = "mg.example.com";
 
+    private readonly MailgunEnvironment _environment = new(apiKey: "key", domain: Domain);
     private readonly MockHttpMessageHandler _handler = new();
     private readonly HttpClient _httpClient;
     private readonly MailgunEmailService _service;
 
     public MailgunSenderTests()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, Domain);
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiVersionVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
-
         _httpClient = new HttpClient(_handler);
         _service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance, _httpClient);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, null);
-
+        _environment.Dispose();
         _httpClient.Dispose();
         _handler.Dispose();
 
@@ -67,7 +58,8 @@ public class MailgunSenderTests : IDisposable
     [Fact]
     public async Task GivenNoConfiguredSender_WhenSendingAnEmail_ThenItIsSentAsThePostmasterWithoutADisplayName()
     {
-        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body");
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
 
         Assert.True(output.Success);
         Assert.Equal($"postmaster@{Domain}", SentFrom());
@@ -81,7 +73,8 @@ public class MailgunSenderTests : IDisposable
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);
 
-        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body");
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
 
         Assert.True(output.Success);
         Assert.Equal($"postmaster@{Domain}", SentFrom());
@@ -92,14 +85,33 @@ public class MailgunSenderTests : IDisposable
     [InlineData("Acme <no-reply@acme.com>")]
     [InlineData("\"Acme, Inc.\" <no-reply@acme.com>")]
     [InlineData("Zoë at Acme <zoe@acme.com>")]
+    [InlineData("NO-REPLY@ACME.COM")]
+    [InlineData("\"support@acme\" <no-reply@acme.com>")]
     public async Task GivenAConfiguredSender_WhenSendingAnEmail_ThenItIsSentFromThatSender(string from)
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);
 
-        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body");
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
 
         Assert.True(output.Success);
         Assert.Equal(from, SentFrom());
+    }
+
+    [Theory]
+    [InlineData("<no-reply@acme.com>", "no-reply@acme.com")]
+    [InlineData("  <no-reply@acme.com>  ", "no-reply@acme.com")]
+    [InlineData("<NO-REPLY@ACME.COM>", "NO-REPLY@ACME.COM")]
+    public async Task GivenAConfiguredSenderInAngleBracketsWithoutADisplayName_WhenSendingAnEmail_ThenTheBareAddressIsSent(
+        string from, string expected)
+    {
+        Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);
+
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
+
+        Assert.True(output.Success);
+        Assert.Equal(expected, SentFrom());
     }
 
     [Fact]
@@ -107,7 +119,7 @@ public class MailgunSenderTests : IDisposable
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, "  Acme <no-reply@acme.com>  ");
 
-        await _service.SendEmailAsync("to@example.com", "Subject", "Body");
+        await _service.SendEmailAsync("to@example.com", "Subject", "Body", TestContext.Current.CancellationToken);
 
         Assert.Equal("Acme <no-reply@acme.com>", SentFrom());
     }
@@ -120,11 +132,21 @@ public class MailgunSenderTests : IDisposable
     [InlineData("no-reply@acme.com, Acme <other@acme.com>")]
     [InlineData("<no-reply@acme.com>, <other@acme.com>")]
     [InlineData("no-reply@acme.com\r\nBcc: victim@example.com")]
+    [InlineData("Acme, Inc. <no-reply@acme.com>")]
+    [InlineData("support@acme <no-reply@acme.com>")]
+    [InlineData("<>")]
+    [InlineData("< >")]
+    [InlineData("Acme <>")]
+    [InlineData("<no-reply@acme.com> <other@acme.com>")]
+    [InlineData("<no-reply@acme.com>; <other@acme.com>")]
+    [InlineData("<no-reply@acme.com")]
+    [InlineData("no-reply@acme.com>")]
     public async Task GivenAnInvalidSender_WhenSendingAnEmail_ThenTheEnvelopeSaysSoAndNothingIsSent(string from)
     {
         Environment.SetEnvironmentVariable(MailgunEmailService.FromVariable, from);
 
-        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body");
+        var output = await _service.SendEmailAsync("to@example.com", "Subject", "Body",
+            TestContext.Current.CancellationToken);
 
         Assert.False(output.Success);
         Assert.Contains(output.Errors, error => error.Contains(MailgunEmailService.FromVariable));

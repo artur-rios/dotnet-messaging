@@ -14,24 +14,22 @@ namespace ArturRios.Messaging.Tests.Email;
 [Collection(MailgunEnvironmentCollection.Name)]
 public class MailgunCancellationTests : IDisposable
 {
+    private readonly MailgunEnvironment _environment = new(apiKey: "key", domain: "mg.example.com");
     private readonly BlockingHandler _handler = new();
     private readonly HttpClient _httpClient;
     private readonly MailgunEmailService _service;
 
     public MailgunCancellationTests()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, "key");
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, "mg.example.com");
-
         _httpClient = new HttpClient(_handler);
         _service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance, _httpClient);
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(MailgunEmailService.ApiKeyVariable, null);
-        Environment.SetEnvironmentVariable(MailgunEmailService.DomainVariable, null);
+        _environment.Dispose();
         _httpClient.Dispose();
+        _handler.Dispose();
     }
 
     [Fact]
@@ -52,10 +50,11 @@ public class MailgunCancellationTests : IDisposable
         using var cancellation = new CancellationTokenSource();
 
         var send = _service.SendEmailAsync("to@example.com", "s", "b", cancellation.Token);
-        await _handler.RequestArrived.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await _handler.RequestArrived.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         await cancellation.CancelAsync();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => send.WaitAsync(TimeSpan.FromSeconds(10)));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => send.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -65,10 +64,11 @@ public class MailgunCancellationTests : IDisposable
         using var cancellation = new CancellationTokenSource();
 
         var send = service.SendEmailAsync("to@example.com", "s", "b", cancellation.Token);
-        await _handler.RequestArrived.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await _handler.RequestArrived.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         await cancellation.CancelAsync();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => send.WaitAsync(TimeSpan.FromSeconds(10)));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => send.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -95,6 +95,19 @@ public class MailgunCancellationTests : IDisposable
             service.SendEmailAsync("to@example.com", "s", "b", cancellation.Token));
 
         Assert.Equal(0, legacy.Calls);
+    }
+
+    [Fact]
+    public async Task GivenAClientTimeout_WhenMailgunDoesNotAnswerInTime_ThenTaskCanceledExceptionIsThrown()
+    {
+        // The handler never answers, so the client's own timeout ends the send, however short it is.
+        using var client = new HttpClient(_handler, disposeHandler: false) { Timeout = TimeSpan.FromMilliseconds(1) };
+        var service = new MailgunEmailService(NullLogger<MailgunEmailService>.Instance, client);
+
+        var exception = await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            service.SendEmailAsync("to@example.com", "s", "b", TestContext.Current.CancellationToken));
+
+        Assert.IsType<TimeoutException>(exception.InnerException);
     }
 
     /// <summary>An implementation written against the three-argument contract only.</summary>
